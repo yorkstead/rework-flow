@@ -121,15 +121,18 @@ export default function ReserveBayPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Bays Open Now
-          </div>
+          <Link
+            href="/maps"
+            className="text-[11px] bg-blue-600/20 text-blue-300 px-2 py-1 rounded border border-blue-500/40 flex items-center gap-1 hover:bg-blue-600/30 transition"
+          >
+            <MapPin className="w-3 h-3 text-blue-400" />
+            <span className="hidden xs:inline">From</span> Maps
+          </Link>
           <Link
             href="/office"
-            className="text-[11px] bg-[#162b45] text-slate-300 px-2 py-1 rounded border border-[#233f63] flex items-center gap-1"
+            className="text-[11px] bg-[#162b45] text-slate-300 px-2 py-1 rounded border border-[#233f63] flex items-center gap-1 hover:bg-[#1f3857] transition"
           >
-            <span>Office Board</span>
+            <span>Board</span>
             <ExternalLink className="w-3 h-3 text-slate-400" />
           </Link>
         </div>

@@ -29,26 +29,62 @@ export default function HomePage() {
         <div className="bg-[#0f2238] border border-[#233f63] rounded-2xl p-5 text-left space-y-3 shadow-xl">
           <div className="flex items-center gap-2 text-sm font-bold text-[#d4af37]">
             <ShieldCheck className="w-4 h-4" />
-            <span>How to Run the 3-Step Live Pitch Demo:</span>
+            <span>How to Run the 4-Step Live Pitch Demo:</span>
           </div>
           <ol className="text-xs sm:text-sm text-slate-300 space-y-2 list-decimal list-inside leading-relaxed">
             <li>
-              <strong>Step 1 (The Driver on Highway):</strong> Open{" "}
-              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/reserve</code> on your phone. Pick shifted pallets, see the instant transparent rate estimate ($450–$550), and reserve <strong>Bay 2</strong> with a 30m ETA.
+              <strong>Start with Google Maps:</strong> Open{" "}
+              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/maps</code> on your phone. Show Steve & Dale how a driver searching <em>&quot;pallet rework near me&quot;</em> on I-70 sees Denver Express with an exclusive <strong>&quot;⚡ Reserve Dock Bay & Instant Quote&quot;</strong> button while competitors have nothing.
             </li>
             <li>
-              <strong>Step 2 (The Terminal Office):</strong> Keep your <strong>Laptop</strong> open at{" "}
-              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/office</code>. You’ll hear an instant chime and see <em>&quot;🚨 INCOMING RESERVATION: SWFT-55219 • Bay 2 Held&quot;</em> pop up on the board.
+              <strong>The Highway Lock-In:</strong> Tap that button into{" "}
+              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/reserve</code>. Pick 8 shifted pallets, see the instant $450–$550 estimate, and hold <strong>Bay 2</strong> with a 30m countdown.
             </li>
             <li>
-              <strong>Step 3 (The Dock Operator):</strong> Open{" "}
-              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/dock</code>. Tap &quot;Check In&quot; on the arriving reservation, log materials, collect the driver&apos;s signature, and hit &quot;Dispatch&quot;. Watch your laptop immediately chime again as the completed invoice and photo certificate register!
+              <strong>The Office Board Alert:</strong> Keep your <strong>Laptop</strong> open at{" "}
+              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/office</code>. Hear the instant chime as Bay 2 turns amber with the incoming trailer.
+            </li>
+            <li>
+              <strong>The 90-Second Dock Finish:</strong> Open{" "}
+              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/dock</code>. Tap &quot;Check In&quot;, log materials, collect the driver&apos;s glass signature, and dispatch. Watch the laptop immediately chime with the completed $482.50 invoice and signed PDF certificate!
             </li>
           </ol>
         </div>
 
-        {/* Three Action Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+        {/* Hero Entry Card: Google Maps Lead Generator */}
+        <div className="pt-2">
+          <Link
+            href="/maps"
+            className="group relative flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-[#1c2e4a] via-[#162b45] to-[#0f2238] border-2 border-amber-500/60 hover:border-[#d4af37] transition-all hover:scale-[1.01] shadow-xl text-left"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                <Truck className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                    Step 0 • The Acquisition Hook
+                  </span>
+                  <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Interactive Simulation
+                  </span>
+                </div>
+                <h2 className="text-lg font-black text-white group-hover:text-[#d4af37] transition mt-1">
+                  Google Maps Driver Discovery Screen
+                </h2>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Simulate a stranded driver searching I-70, finding Denver Express at 6030 Washington, and tapping the exclusive appointment button.
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-6 h-6 text-amber-400 group-hover:translate-x-1 transition shrink-0 ml-4" />
+          </Link>
+        </div>
+
+        {/* Three Operational Views */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
           
           {/* Card 1: Trucker Reservation */}
           <Link
@@ -56,11 +92,11 @@ export default function HomePage() {
             className="group relative flex flex-col items-center justify-between p-5 rounded-2xl bg-[#162b45] border-2 border-[#233f63] hover:border-[#d4af37] transition-all hover:scale-[1.02] shadow-lg text-left"
           >
             <div className="w-full flex items-center justify-between mb-3">
-              <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
                 <Truck className="w-5 h-5" />
               </div>
               <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0b192c] text-amber-400 font-bold border border-[#233f63]">
-                1. Highway Driver
+                1. Driver Intake
               </span>
             </div>
             <div className="w-full">
@@ -80,7 +116,7 @@ export default function HomePage() {
             className="group relative flex flex-col items-center justify-between p-5 rounded-2xl bg-[#162b45] border-2 border-[#233f63] hover:border-[#d4af37] transition-all hover:scale-[1.02] shadow-lg text-left"
           >
             <div className="w-full flex items-center justify-between mb-3">
-              <div className="w-11 h-11 rounded-xl bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37]">
+              <div className="w-10 h-10 rounded-xl bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37]">
                 <Truck className="w-5 h-5" />
               </div>
               <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0b192c] text-emerald-400 font-bold border border-[#233f63]">
@@ -104,7 +140,7 @@ export default function HomePage() {
             className="group relative flex flex-col items-center justify-between p-5 rounded-2xl bg-[#162b45] border-2 border-[#233f63] hover:border-[#d4af37] transition-all hover:scale-[1.02] shadow-lg text-left"
           >
             <div className="w-full flex items-center justify-between mb-3">
-              <div className="w-11 h-11 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
                 <LayoutDashboard className="w-5 h-5" />
               </div>
               <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0b192c] text-blue-400 font-bold border border-[#233f63]">
