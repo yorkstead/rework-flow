@@ -29,73 +29,95 @@ export default function HomePage() {
         <div className="bg-[#0f2238] border border-[#233f63] rounded-2xl p-5 text-left space-y-3 shadow-xl">
           <div className="flex items-center gap-2 text-sm font-bold text-[#d4af37]">
             <ShieldCheck className="w-4 h-4" />
-            <span>How to Run the Two-Device Live Pitch:</span>
+            <span>How to Run the 3-Step Live Pitch Demo:</span>
           </div>
           <ol className="text-xs sm:text-sm text-slate-300 space-y-2 list-decimal list-inside leading-relaxed">
             <li>
-              Keep your <strong>Laptop</strong> open on this site at{" "}
-              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/office</code> (the Billing Board).
+              <strong>Step 1 (The Driver on Highway):</strong> Open{" "}
+              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/reserve</code> on your phone. Pick shifted pallets, see the instant transparent rate estimate ($450–$550), and reserve <strong>Bay 2</strong> with a 30m ETA.
             </li>
             <li>
-              Open this same site on your <strong>Smartphone</strong> at{" "}
-              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/dock</code> (the Forklift Operator View).
+              <strong>Step 2 (The Terminal Office):</strong> Keep your <strong>Laptop</strong> open at{" "}
+              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/office</code>. You’ll hear an instant chime and see <em>&quot;🚨 INCOMING RESERVATION: SWFT-55219 • Bay 2 Held&quot;</em> pop up on the board.
             </li>
             <li>
-              Complete an emergency shifted-pallet job on your phone.
-            </li>
-            <li>
-              <strong>Instant result:</strong> Your laptop will automatically play a confirmation chime, update the daily revenue ticker, and display the completed job with Before/After photos and the driver’s digital signature!
+              <strong>Step 3 (The Dock Operator):</strong> Open{" "}
+              <code className="bg-[#162b45] px-1.5 py-0.5 rounded text-[#d4af37] font-mono">/dock</code>. Tap &quot;Check In&quot; on the arriving reservation, log materials, collect the driver&apos;s signature, and hit &quot;Dispatch&quot;. Watch your laptop immediately chime again as the completed invoice and photo certificate register!
             </li>
           </ol>
         </div>
 
-        {/* Two Big Action Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+        {/* Three Action Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           
-          {/* Card 1: Dock Phone View */}
+          {/* Card 1: Trucker Reservation */}
           <Link
-            href="/dock"
-            className="group relative flex flex-col items-center justify-between p-6 rounded-2xl bg-[#162b45] border-2 border-[#233f63] hover:border-[#d4af37] transition-all hover:scale-[1.02] shadow-lg text-left"
+            href="/reserve"
+            className="group relative flex flex-col items-center justify-between p-5 rounded-2xl bg-[#162b45] border-2 border-[#233f63] hover:border-[#d4af37] transition-all hover:scale-[1.02] shadow-lg text-left"
           >
-            <div className="w-full flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37]">
-                <Truck className="w-6 h-6" />
+            <div className="w-full flex items-center justify-between mb-3">
+              <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                <Truck className="w-5 h-5" />
               </div>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0b192c] text-emerald-400 font-bold border border-[#233f63]">
-                Phone / Tablet
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0b192c] text-amber-400 font-bold border border-[#233f63]">
+                1. Highway Driver
               </span>
             </div>
             <div className="w-full">
-              <h2 className="text-lg font-bold text-white group-hover:text-[#d4af37] transition flex items-center justify-between">
-                <span>Forklift Operator View</span>
-                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#d4af37] group-hover:translate-x-1 transition" />
+              <h2 className="text-base font-bold text-white group-hover:text-amber-400 transition flex items-center justify-between">
+                <span>Trucker Bay Reserve</span>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-400 group-hover:translate-x-1 transition" />
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                2-minute dock intake, before/after camera capture, supply tally, and driver glass signature.
+                Instant rate estimate, 45-minute dock bay hold, and turn-by-turn routing directly from I-70.
               </p>
             </div>
           </Link>
 
-          {/* Card 2: Office Laptop View */}
+          {/* Card 2: Dock Phone View */}
           <Link
-            href="/office"
-            className="group relative flex flex-col items-center justify-between p-6 rounded-2xl bg-[#162b45] border-2 border-[#233f63] hover:border-[#d4af37] transition-all hover:scale-[1.02] shadow-lg text-left"
+            href="/dock"
+            className="group relative flex flex-col items-center justify-between p-5 rounded-2xl bg-[#162b45] border-2 border-[#233f63] hover:border-[#d4af37] transition-all hover:scale-[1.02] shadow-lg text-left"
           >
-            <div className="w-full flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
-                <LayoutDashboard className="w-6 h-6" />
+            <div className="w-full flex items-center justify-between mb-3">
+              <div className="w-11 h-11 rounded-xl bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37]">
+                <Truck className="w-5 h-5" />
               </div>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0b192c] text-blue-400 font-bold border border-[#233f63]">
-                Laptop / Desktop
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0b192c] text-emerald-400 font-bold border border-[#233f63]">
+                2. Forklift Tech
               </span>
             </div>
             <div className="w-full">
-              <h2 className="text-lg font-bold text-white group-hover:text-blue-400 transition flex items-center justify-between">
-                <span>Office Billing Board</span>
+              <h2 className="text-base font-bold text-white group-hover:text-[#d4af37] transition flex items-center justify-between">
+                <span>Dock Operator</span>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#d4af37] group-hover:translate-x-1 transition" />
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Incoming reservation intake, camera photos, supply tracking, and digital driver sign-off.
+              </p>
+            </div>
+          </Link>
+
+          {/* Card 3: Office Laptop View */}
+          <Link
+            href="/office"
+            className="group relative flex flex-col items-center justify-between p-5 rounded-2xl bg-[#162b45] border-2 border-[#233f63] hover:border-[#d4af37] transition-all hover:scale-[1.02] shadow-lg text-left"
+          >
+            <div className="w-full flex items-center justify-between mb-3">
+              <div className="w-11 h-11 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                <LayoutDashboard className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0b192c] text-blue-400 font-bold border border-[#233f63]">
+                3. Office Dispatch
+              </span>
+            </div>
+            <div className="w-full">
+              <h2 className="text-base font-bold text-white group-hover:text-blue-400 transition flex items-center justify-between">
+                <span>Billing & Board</span>
                 <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-400 group-hover:translate-x-1 transition" />
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Real-time bay occupancy, live revenue ticker, instant PDF certificate preview, and QuickBooks export.
+                Real-time audio chime, live bay monitor, PDF certificate generation, and QuickBooks export.
               </p>
             </div>
           </Link>

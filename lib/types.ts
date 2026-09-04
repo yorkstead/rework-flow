@@ -6,7 +6,9 @@ export interface ReworkJob {
   driverPhone: string;
   bayNumber: string;
   serviceType: "Shifted Pallets" | "Axle Rebalance" | "Pallet Swap" | "Floor Transload";
-  status: "In Progress" | "Completed" | "Billed";
+  status: "Reserved" | "In Progress" | "Completed" | "Billed";
+  eta?: string;
+  estimatedRange?: string;
   palletsCount: number;
   wrapCount: number;
   cornersCount: number;

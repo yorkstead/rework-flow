@@ -17,7 +17,7 @@ import {
   Smartphone,
   ExternalLink,
 } from "lucide-react";
-import { RATES } from "@/lib/types";
+import { RATES, ReworkJob } from "@/lib/types";
 import { SAMPLE_BEFORE_1, SAMPLE_BEFORE_2, SAMPLE_AFTER, SAMPLE_SIGNATURE } from "@/lib/mock-data";
 
 export default function DockOperatorPage() {
@@ -30,6 +30,40 @@ export default function DockOperatorPage() {
   const [driverName, setDriverName] = useState("Marcus Vance");
   const [driverPhone, setDriverPhone] = useState("(720) 555-0194");
   const [bayNumber, setBayNumber] = useState("Bay 2");
+
+  // Reservation State
+  const [incomingReservations, setIncomingReservations] = useState<ReworkJob[]>([]);
+  const [activeReservationId, setActiveReservationId] = useState<string | null>(null);
+
+  // Poll for incoming reservations from mobile /reserve
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        const res = await fetch("/api/jobs");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.jobs)) {
+          const reserved = data.jobs.filter((j: ReworkJob) => j.status === "Reserved");
+          setIncomingReservations(reserved);
+        }
+      } catch (e) {
+        console.warn("Poll reservations error:", e);
+      }
+    };
+    fetchReservations();
+    const interval = setInterval(fetchReservations, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleCheckInReserved = (job: ReworkJob) => {
+    setActiveReservationId(job.id);
+    setTrailerNumber(job.trailerNumber);
+    setCarrierName(job.carrierName);
+    setDriverName(job.driverName);
+    setDriverPhone(job.driverPhone);
+    setBayNumber(job.bayNumber);
+    setServiceType(job.serviceType);
+    setStep(2); // Jump straight to taking before photos
+  };
 
   // Photos
   const [before1, setBefore1] = useState(SAMPLE_BEFORE_1);
@@ -145,6 +179,8 @@ export default function DockOperatorPage() {
       const signatureData = canvas ? canvas.toDataURL() : SAMPLE_SIGNATURE;
 
       const payload = {
+        id: activeReservationId || undefined,
+        status: "Completed",
         trailerNumber,
         carrierName,
         driverName,
@@ -319,6 +355,47 @@ export default function DockOperatorPage() {
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">Assign bay and select damage recovery</p>
                 </div>
+
+                {/* INCOMING PRE-ARRIVAL RESERVATIONS BANNER */}
+                {incomingReservations.length > 0 && (
+                  <div className="bg-amber-500/15 border-2 border-amber-500/60 rounded-xl p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between text-xs font-bold text-amber-400">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                        Incoming Reserved Trucks ({incomingReservations.length})
+                      </span>
+                      <span className="text-[10px] uppercase font-mono bg-amber-400/20 px-2 py-0.5 rounded border border-amber-400/30">
+                        Mobile App Hold
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {incomingReservations.map((res) => (
+                        <div
+                          key={res.id}
+                          className="bg-[#060d17] p-3 rounded-lg border border-[#233f63] flex items-center justify-between gap-3"
+                        >
+                          <div>
+                            <div className="text-xs font-bold text-white font-mono flex items-center gap-1.5">
+                              <span>{res.trailerNumber}</span>
+                              <span className="text-slate-400 font-normal">({res.carrierName})</span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              {res.bayNumber} • ETA: <strong className="text-emerald-400">{res.eta || "30 Mins"}</strong> • {res.serviceType}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCheckInReserved(res)}
+                            className="px-3 py-1.5 rounded-lg bg-[#d4af37] hover:bg-[#b89628] text-[#0b192c] font-black text-xs shrink-0 transition"
+                          >
+                            Check In →
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Service Type Selection */}
                 <div className="grid grid-cols-2 gap-2.5">

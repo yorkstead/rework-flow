@@ -98,26 +98,28 @@ export default function OfficeBillingPage() {
       
       {/* NEW ARRIVAL FLOATING TOAST / BANNER */}
       {newArrivalAlert && (
-        <div className="fixed top-16 right-6 z-50 max-w-md w-full bg-emerald-950 border-2 border-emerald-400 text-white p-4 rounded-2xl shadow-2xl shadow-emerald-900/50 flex items-start justify-between gap-3 animate-bounce">
+        <div className={`fixed top-16 right-6 z-50 max-w-md w-full bg-slate-900 border-2 ${newArrivalAlert.status === "Reserved" ? "border-amber-400" : "border-emerald-400"} text-white p-4 rounded-2xl shadow-2xl shadow-black/80 flex items-start justify-between gap-3 animate-bounce`}>
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shrink-0">
+            <div className={`w-10 h-10 rounded-xl ${newArrivalAlert.status === "Reserved" ? "bg-amber-500 text-slate-950" : "bg-emerald-500 text-slate-950"} flex items-center justify-center font-black shrink-0`}>
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-400 text-slate-950 font-bold uppercase">
-                  Live Sync from Dock
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${newArrivalAlert.status === "Reserved" ? "bg-amber-400 text-slate-950" : "bg-emerald-400 text-slate-950"} font-bold uppercase`}>
+                  {newArrivalAlert.status === "Reserved" ? "Pre-Arrival Bay Hold" : "Live Sync from Dock"}
                 </span>
-                <span className="text-xs text-emerald-300 font-mono font-bold">{newArrivalAlert.id}</span>
+                <span className="text-xs text-slate-300 font-mono font-bold">{newArrivalAlert.id}</span>
               </div>
               <h4 className="font-bold text-sm text-white mt-1">
-                Trailer {newArrivalAlert.trailerNumber} Completed!
+                {newArrivalAlert.status === "Reserved"
+                  ? `Trailer ${newArrivalAlert.trailerNumber} Reserved ${newArrivalAlert.bayNumber}!`
+                  : `Trailer ${newArrivalAlert.trailerNumber} Completed!`}
               </h4>
               <p className="text-xs text-slate-300">
-                {newArrivalAlert.carrierName} • {newArrivalAlert.bayNumber}
+                {newArrivalAlert.carrierName} • {newArrivalAlert.status === "Reserved" ? `ETA: ${newArrivalAlert.eta || "30 Mins"}` : newArrivalAlert.bayNumber}
               </p>
               <div className="text-xs font-mono font-bold text-[#d4af37] mt-1">
-                +${newArrivalAlert.totalAmount.toFixed(2)} Ready to Bill
+                {newArrivalAlert.status === "Reserved" ? `Estimated: $${newArrivalAlert.totalAmount.toFixed(2)}` : `+$${newArrivalAlert.totalAmount.toFixed(2)} Ready to Bill`}
               </div>
             </div>
           </div>
@@ -129,15 +131,17 @@ export default function OfficeBillingPage() {
             >
               ✕
             </button>
-            <button
-              onClick={() => {
-                setActiveJob(newArrivalAlert);
-                setNewArrivalAlert(null);
-              }}
-              className="px-3 py-1 bg-emerald-400 text-slate-950 rounded-lg text-xs font-bold hover:bg-emerald-300 transition"
-            >
-              View Packet
-            </button>
+            {newArrivalAlert.status !== "Reserved" && (
+              <button
+                onClick={() => {
+                  setActiveJob(newArrivalAlert);
+                  setNewArrivalAlert(null);
+                }}
+                className="px-3 py-1 bg-emerald-400 text-slate-950 rounded-lg text-xs font-bold hover:bg-emerald-300 transition"
+              >
+                View Packet
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -329,18 +333,31 @@ export default function OfficeBillingPage() {
                       ${job.totalAmount.toFixed(2)}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 w-fit">
-                        <CheckCircle className="w-3 h-3" />
-                        Signed & Dispatched
-                      </span>
+                      {job.status === "Reserved" ? (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/40 flex items-center gap-1 w-fit animate-pulse">
+                          <Clock className="w-3 h-3 text-amber-400" />
+                          Incoming Hold (ETA {job.eta || "30m"})
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 w-fit">
+                          <CheckCircle className="w-3 h-3" />
+                          Signed & Dispatched
+                        </span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => setActiveJob(job)}
-                        className="px-3 py-1.5 rounded-lg bg-[#d4af37]/20 hover:bg-[#d4af37]/30 text-[#d4af37] border border-[#d4af37]/40 font-bold text-xs transition"
-                      >
-                        View Certificate
-                      </button>
+                      {job.status === "Reserved" ? (
+                        <span className="text-xs text-amber-400 font-mono font-semibold px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20">
+                          Bay Held
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setActiveJob(job)}
+                          className="px-3 py-1.5 rounded-lg bg-[#d4af37]/20 hover:bg-[#d4af37]/30 text-[#d4af37] border border-[#d4af37]/40 font-bold text-xs transition"
+                        >
+                          View Certificate
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

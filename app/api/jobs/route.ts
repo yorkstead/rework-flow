@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { INITIAL_JOBS } from "@/lib/mock-data";
 import { ReworkJob } from "@/lib/types";
 
-// Maintain an in-memory job list across server requests
 declare global {
   // eslint-disable-next-line no-var
   var __reworkJobs: ReworkJob[] | undefined;
@@ -30,7 +29,16 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Partial<ReworkJob>;
 
-    const newJob: ReworkJob = {
+    if (!globalThis.__reworkJobs) {
+      globalThis.__reworkJobs = [...INITIAL_JOBS];
+    }
+
+    // Check if updating an existing job (e.g. converting a Reserved truck to Completed)
+    const existingIndex = body.id
+      ? globalThis.__reworkJobs.findIndex((j) => j.id === body.id)
+      : -1;
+
+    const jobData: ReworkJob = {
       id: body.id || `RW-${Math.floor(1000 + Math.random() * 9000)}`,
       trailerNumber: body.trailerNumber || "SWFT-55219",
       carrierName: body.carrierName || "Swift Transportation",
@@ -39,6 +47,8 @@ export async function POST(request: Request) {
       bayNumber: body.bayNumber || "Bay 2",
       serviceType: body.serviceType || "Shifted Pallets",
       status: body.status || "Completed",
+      eta: body.eta,
+      estimatedRange: body.estimatedRange,
       palletsCount: body.palletsCount ?? 4,
       wrapCount: body.wrapCount ?? 2,
       cornersCount: body.cornersCount ?? 8,
@@ -51,23 +61,25 @@ export async function POST(request: Request) {
       signatureData: body.signatureData || "",
       defectTags: body.defectTags || ["Mountain Shift", "Pallet Wall Collapse"],
       createdAt: body.createdAt || new Date().toISOString(),
-      completedAt: new Date().toISOString(),
+      completedAt: body.status === "Completed" ? new Date().toISOString() : undefined,
     };
 
-    if (!globalThis.__reworkJobs) {
-      globalThis.__reworkJobs = [...INITIAL_JOBS];
+    if (existingIndex >= 0) {
+      globalThis.__reworkJobs[existingIndex] = {
+        ...globalThis.__reworkJobs[existingIndex],
+        ...jobData,
+      };
+    } else {
+      globalThis.__reworkJobs = [jobData, ...globalThis.__reworkJobs];
     }
-
-    // Prepend so latest job appears at top
-    globalThis.__reworkJobs = [newJob, ...globalThis.__reworkJobs];
 
     return NextResponse.json({
       success: true,
-      job: newJob,
+      job: jobData,
       totalJobs: globalThis.__reworkJobs.length,
     });
   } catch (error) {
-    console.error("Error creating job:", error);
-    return NextResponse.json({ success: false, error: "Failed to create job" }, { status: 400 });
+    console.error("Error creating/updating job:", error);
+    return NextResponse.json({ success: false, error: "Failed to process job" }, { status: 400 });
   }
 }
