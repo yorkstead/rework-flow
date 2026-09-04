@@ -3,7 +3,6 @@ import { INITIAL_JOBS } from "@/lib/mock-data";
 import { ReworkJob } from "@/lib/types";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __reworkJobs: ReworkJob[] | undefined;
 }
 
@@ -65,10 +64,12 @@ export async function POST(request: Request) {
     };
 
     if (existingIndex >= 0) {
-      globalThis.__reworkJobs[existingIndex] = {
+      const updatedJob = {
         ...globalThis.__reworkJobs[existingIndex],
         ...jobData,
       };
+      globalThis.__reworkJobs.splice(existingIndex, 1);
+      globalThis.__reworkJobs.unshift(updatedJob);
     } else {
       globalThis.__reworkJobs = [jobData, ...globalThis.__reworkJobs];
     }

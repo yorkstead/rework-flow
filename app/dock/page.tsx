@@ -62,6 +62,12 @@ export default function DockOperatorPage() {
     setDriverPhone(job.driverPhone);
     setBayNumber(job.bayNumber);
     setServiceType(job.serviceType);
+    if (job.palletsCount !== undefined) setPallets(job.palletsCount);
+    if (job.wrapCount !== undefined) setWrap(job.wrapCount);
+    if (job.cornersCount !== undefined) setCorners(job.cornersCount);
+    if (job.laborHours !== undefined) setLabor(job.laborHours);
+    if (job.scaleCheck !== undefined) setScaleCheck(job.scaleCheck);
+    if (job.debrisFee !== undefined) setDebrisFee(job.debrisFee);
     setStep(2); // Jump straight to taking before photos
   };
 
@@ -116,30 +122,45 @@ export default function DockOperatorPage() {
   }, [step]);
 
   // Touch drawing handlers
+  const getCoordinates = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
+  };
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const coords = getCoordinates(e);
+    if (!coords) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     setIsDrawing(true);
     setHasDrawnSignature(true);
-    const rect = canvas.getBoundingClientRect();
-    const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(x, y);
+    ctx.moveTo(coords.x, coords.y);
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const coords = getCoordinates(e);
+    if (!coords) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-    ctx.lineTo(x, y);
+    ctx.lineTo(coords.x, coords.y);
     ctx.stroke();
   };
 
@@ -540,7 +561,7 @@ export default function DockOperatorPage() {
                   <div>
                     <h2 className="text-base font-bold text-white flex items-center gap-2">
                       <Camera className="w-5 h-5 text-[#d4af37]" />
-                      Step 2: "Before" Damage Photos
+                      Step 2: &quot;Before&quot; Damage Photos
                     </h2>
                     <p className="text-xs text-slate-400 mt-0.5">Indisputable inbound proof</p>
                   </div>
@@ -663,7 +684,7 @@ export default function DockOperatorPage() {
                   {/* Corner Boards */}
                   <div className="bg-[#060d17] border border-[#233f63] rounded-xl p-3 flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-bold text-white">Corner Boards (48")</div>
+                      <div className="text-xs font-bold text-white">Corner Boards (48&quot;)</div>
                       <div className="text-[10px] text-slate-400">$3.00 each</div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -760,9 +781,9 @@ export default function DockOperatorPage() {
                   <div>
                     <h2 className="text-base font-bold text-white flex items-center gap-2">
                       <CheckCircle className="w-5 h-5 text-emerald-400" />
-                      Step 4: "After" Proof & Sign-Off
+                      Step 4: &quot;After&quot; Proof &amp; Sign-Off
                     </h2>
-                    <p className="text-xs text-slate-400">Road-ready proof & driver sign on glass</p>
+                    <p className="text-xs text-slate-400">Road-ready proof &amp; driver sign on glass</p>
                   </div>
                   <span className="text-xs font-mono font-bold text-[#d4af37] bg-[#d4af37]/15 px-2 py-0.5 rounded border border-[#d4af37]/30">
                     ${liveTotal.toFixed(2)}
@@ -796,7 +817,7 @@ export default function DockOperatorPage() {
                       ref={canvasRef}
                       width={400}
                       height={120}
-                      className="w-full h-[120px] bg-slate-950 cursor-crosshair"
+                      className="w-full h-[120px] bg-slate-950 cursor-crosshair touch-none"
                       onMouseDown={startDrawing}
                       onMouseMove={draw}
                       onMouseUp={stopDrawing}
@@ -813,7 +834,7 @@ export default function DockOperatorPage() {
                   </div>
 
                   <p className="text-[10px] text-slate-400 leading-tight bg-[#060d17] p-2 rounded-lg border border-[#233f63]">
-                    "Driver certifies cargo has been inspected, restacked on GMA pallets, shrinkwrapped, and released in road-ready condition for transport."
+                    &ldquo;Driver certifies cargo has been inspected, restacked on GMA pallets, shrinkwrapped, and released in road-ready condition for transport.&rdquo;
                   </p>
                 </div>
 

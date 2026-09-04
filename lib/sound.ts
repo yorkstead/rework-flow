@@ -1,9 +1,30 @@
+let sharedCtx: AudioContext | null = null;
+
+export function getAudioContext(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  try {
+    if (!sharedCtx) {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioCtx) {
+        sharedCtx = new AudioCtx();
+      }
+    }
+    if (sharedCtx && sharedCtx.state === "suspended") {
+      sharedCtx.resume().catch(() => {});
+    }
+    return sharedCtx;
+  } catch (err) {
+    console.warn("Could not create AudioContext:", err);
+    return null;
+  }
+}
+
 // Synthesizes a clean two-tone logistics dock chime via Web Audio API
 export function playNotificationChime() {
   if (typeof window === "undefined") return;
   try {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    const ctx = new AudioCtx();
+    const ctx = getAudioContext();
+    if (!ctx) return;
 
     const now = ctx.currentTime;
     

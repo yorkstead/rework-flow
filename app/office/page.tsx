@@ -16,7 +16,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { ReworkJob, RATES } from "@/lib/types";
-import { playNotificationChime } from "@/lib/sound";
+import { playNotificationChime, getAudioContext } from "@/lib/sound";
 
 export default function OfficeBillingPage() {
   const [jobs, setJobs] = useState<ReworkJob[]>([]);
@@ -24,43 +24,84 @@ export default function OfficeBillingPage() {
   const [newArrivalAlert, setNewArrivalAlert] = useState<ReworkJob | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
 
-  const prevJobCountRef = useRef<number>(0);
+  const prevJobsMapRef = useRef<Map<string, string>>(new Map());
+  const isFirstLoadRef = useRef(true);
+
+  // Auto-unlock audio on user gesture
+  useEffect(() => {
+    const unlockAudio = () => {
+      getAudioContext();
+      setAudioEnabled(true);
+    };
+    window.addEventListener("click", unlockAudio, { once: true });
+    window.addEventListener("keydown", unlockAudio, { once: true });
+    return () => {
+      window.removeEventListener("click", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
+  }, []);
 
   // Poll for jobs every 1500ms
-  const fetchJobs = async () => {
-    try {
-      const res = await fetch("/api/jobs");
-      const data = await res.json();
-      if (data.success && Array.isArray(data.jobs)) {
-        // If new job arrived
-        if (prevJobCountRef.current > 0 && data.jobs.length > prevJobCountRef.current) {
-          const newest = data.jobs[0];
-          setNewArrivalAlert(newest);
-          playNotificationChime();
-
-          // Auto-hide alert after 8 seconds
-          setTimeout(() => {
-            setNewArrivalAlert((curr) => (curr?.id === newest.id ? null : curr));
-          }, 8000);
-        }
-
-        prevJobCountRef.current = data.jobs.length;
-        setJobs(data.jobs);
-      }
-    } catch (err) {
-      console.warn("Poll jobs error:", err);
-    }
-  };
-
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchJobs = async () => {
+      try {
+        const res = await fetch("/api/jobs");
+        const data = await res.json();
+        if (!isMounted) return;
+
+        if (data.success && Array.isArray(data.jobs)) {
+          const currentMap = new Map<string, string>();
+          data.jobs.forEach((j: ReworkJob) => currentMap.set(j.id, j.status));
+
+          if (!isFirstLoadRef.current) {
+            // Check for newly completed job or newly reserved job
+            const newlyCompleted = data.jobs.find(
+              (j: ReworkJob) =>
+                j.status === "Completed" &&
+                prevJobsMapRef.current.get(j.id) !== "Completed" &&
+                prevJobsMapRef.current.get(j.id) !== "Billed"
+            );
+            const newlyReserved = data.jobs.find(
+              (j: ReworkJob) =>
+                j.status === "Reserved" && !prevJobsMapRef.current.has(j.id)
+            );
+
+            const alertedJob = newlyCompleted || newlyReserved;
+            if (alertedJob) {
+              setNewArrivalAlert(alertedJob);
+              playNotificationChime();
+
+              // Auto-hide alert after 8 seconds
+              setTimeout(() => {
+                setNewArrivalAlert((curr) => (curr?.id === alertedJob.id ? null : curr));
+              }, 8000);
+            }
+          } else {
+            isFirstLoadRef.current = false;
+          }
+
+          prevJobsMapRef.current = currentMap;
+          setJobs(data.jobs);
+        }
+      } catch (err) {
+        console.warn("Poll jobs error:", err);
+      }
+    };
+
     fetchJobs();
     const interval = setInterval(fetchJobs, 1500);
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Compute metrics
-  const totalRevenue = jobs.reduce((sum, j) => sum + (j.totalAmount || 0), 0);
-  const activeBaysOccupied = Math.min(6, jobs.filter((j) => j.status === "In Progress").length + 3);
+  const completedJobs = jobs.filter((j) => j.status !== "Reserved");
+  const totalRevenue = completedJobs.reduce((sum, j) => sum + (j.totalAmount || 0), 0);
+  const activeBaysOccupied = Math.min(6, jobs.filter((j) => j.status === "Reserved" || j.status === "In Progress").length + 3);
 
   // Reset Demo
   const handleReset = async () => {
@@ -68,7 +109,9 @@ export default function OfficeBillingPage() {
       const res = await fetch("/api/jobs?reset=true");
       const data = await res.json();
       if (data.success) {
-        prevJobCountRef.current = data.jobs.length;
+        const currentMap = new Map<string, string>();
+        data.jobs.forEach((j: ReworkJob) => currentMap.set(j.id, j.status));
+        prevJobsMapRef.current = currentMap;
         setJobs(data.jobs);
         setNewArrivalAlert(null);
       }
@@ -206,7 +249,7 @@ export default function OfficeBillingPage() {
             <div>
               <span className="text-white font-bold block">Live Pitch Setup:</span>
               <span className="text-slate-300">
-                Keep this laptop screen visible. On your smartphone, navigate to <code className="text-[#d4af37] font-mono font-bold">/dock</code>. When you tap "Dispatch Certificate" on your phone, this board updates instantly!
+                Keep this laptop screen visible. On your smartphone, navigate to <code className="text-[#d4af37] font-mono font-bold">/dock</code>. When you tap &quot;Dispatch Certificate&quot; on your phone, this board updates instantly!
               </span>
             </div>
           </div>
@@ -223,12 +266,12 @@ export default function OfficeBillingPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           <div className="bg-[#0f2238] border border-[#233f63] rounded-2xl p-5 shadow-lg">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Today's Rework Billing</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Today&apos;s Rework Billing</span>
             <span className="text-3xl font-black text-[#d4af37] mt-1 block font-mono">
               ${totalRevenue.toFixed(2)}
             </span>
             <span className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5" /> {jobs.length} trailers serviced today
+              <TrendingUp className="w-3.5 h-3.5" /> {completedJobs.length} trailers serviced today
             </span>
           </div>
 
@@ -513,7 +556,7 @@ export default function OfficeBillingPage() {
                       <td className="p-2 text-right font-mono">${(activeJob.wrapCount * RATES.wrap).toFixed(2)}</td>
                     </tr>
                     <tr>
-                      <td className="p-2 font-medium">Corner Boards (48" protection)</td>
+                      <td className="p-2 font-medium">Corner Boards (48&quot; protection)</td>
                       <td className="p-2 text-center">{activeJob.cornersCount}</td>
                       <td className="p-2 text-right">${RATES.corners.toFixed(2)}</td>
                       <td className="p-2 text-right font-mono">${(activeJob.cornersCount * RATES.corners).toFixed(2)}</td>

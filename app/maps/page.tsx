@@ -120,7 +120,7 @@ export default function GoogleMapsSimulationPage() {
           <div className="absolute top-28 right-3 max-w-[190px] bg-black/85 backdrop-blur-md border border-[#d4af37]/40 rounded-xl p-2.5 text-[10px] text-slate-300 shadow-xl pointer-events-none z-10">
             <div className="flex items-center gap-1 text-[#d4af37] font-bold mb-1">
               <Zap className="w-3 h-3" />
-              <span>The Driver's Reality:</span>
+              <span>The Driver&apos;s Reality:</span>
             </div>
             <p className="leading-snug text-slate-300">
               Driver shifted 8 pallets on Floyd Hill. They search Google Maps on the shoulder of I-70...
