@@ -1,11 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import { Table, Order, MenuItem, EventRoom, KitchenStation, ItemStatus, CourseNumber, SplitCheck, OrderItem } from '../types';
+import { Table, Order, MenuItem, EventRoom, KitchenStation, ItemStatus, CourseNumber, SplitCheck, OrderItem, AuditLog } from '../types';
 import { INITIAL_TABLES } from '../data/tables';
 import { INITIAL_ORDERS } from '../data/orders';
 import { MENU_ITEMS } from '../data/menu';
 import { INITIAL_EVENTS } from '../data/events';
+import { INITIAL_AUDIT_LOGS } from '../data/auditLogs';
 import { sound } from '../audio';
 
 interface UnionStoreContextType {
@@ -13,6 +14,7 @@ interface UnionStoreContextType {
   orders: Order[];
   menu: MenuItem[];
   events: EventRoom[];
+  auditLogs: AuditLog[];
   activeTableId: string | null;
   activeStation: KitchenStation | 'all';
   eightySixList: string[];
@@ -42,13 +44,26 @@ const UnionStoreContext = createContext<UnionStoreContextType | null>(null);
 const STORAGE_KEY = 'union_os_240_state_v1';
 const BROADCAST_CHANNEL = 'union_os_channel';
 
+// Helper to generate cryptographic-like hex hash for immutable logs
+const generateAuditHash = (action: string, timestamp: number, table?: string) => {
+  const seed = `${action}_${timestamp}_${table || 'SYS'}_${Math.random()}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const chr = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  return '0x' + Math.abs(hash).toString(16).padStart(16, 'a');
+};
+
 export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tables, setTables] = useState<Table[]>(INITIAL_TABLES);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [menu, setMenu] = useState<MenuItem[]>(MENU_ITEMS);
   const [events, setEvents] = useState<EventRoom[]>(INITIAL_EVENTS);
-  const [eightySixList, setEightySixList] = useState<string[]>(['app-octopus']); // Spanish Octopus initially low/86'd demo
-  const [activeTableId, setActiveTableId] = useState<string | null>('tbl-23'); // Default to 6-top federal lunch
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
+  const [eightySixList, setEightySixList] = useState<string[]>(['app-octopus']);
+  const [activeTableId, setActiveTableId] = useState<string | null>('tbl-23');
   const [activeStation, setActiveStation] = useState<KitchenStation | 'all'>('all');
   const [currentServer, setCurrentServer] = useState<string>('Marcus T.');
 
@@ -56,7 +71,6 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Load from server and localStorage on client mount
   useEffect(() => {
-    // Initial fetch from server
     fetch('/api/sync')
       .then(res => res.json())
       .then(data => {
@@ -65,10 +79,10 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (data.menu) setMenu(data.menu);
         if (data.events) setEvents(data.events);
         if (data.eightySixList) setEightySixList(data.eightySixList);
+        if (data.auditLogs) setAuditLogs(data.auditLogs);
         if (data.version) localVersionRef.current = data.version;
       })
       .catch(() => {
-        // Fallback to localStorage
         try {
           const saved = localStorage.getItem(STORAGE_KEY);
           if (saved) {
@@ -78,6 +92,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             if (parsed.menu) setMenu(parsed.menu);
             if (parsed.events) setEvents(parsed.events);
             if (parsed.eightySixList) setEightySixList(parsed.eightySixList);
+            if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
           }
         } catch {
           // Ignore
@@ -85,7 +100,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       });
   }, []);
 
-  // Poll server every 1200ms for real-time multi-device sync (phone <-> laptop)
+  // Poll server every 1200ms for real-time multi-device sync
   useEffect(() => {
     const interval = setInterval(() => {
       fetch('/api/sync')
@@ -98,6 +113,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             if (data.menu) setMenu(data.menu);
             if (data.events) setEvents(data.events);
             if (data.eightySixList) setEightySixList(data.eightySixList);
+            if (data.auditLogs) setAuditLogs(data.auditLogs);
 
             if (data.sound === 'PLAY_FIRE') {
               sound.playKitchenFire();
@@ -119,6 +135,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     newMenu: MenuItem[], 
     newEvents: EventRoom[], 
     new86: string[],
+    newAuditLogs: AuditLog[],
     soundToTrigger?: 'PLAY_FIRE' | 'PLAY_BUMP'
   ) => {
     const newVersion = Date.now();
@@ -130,6 +147,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       menu: newMenu,
       events: newEvents,
       eightySixList: new86,
+      auditLogs: newAuditLogs,
       sound: soundToTrigger || null,
       version: newVersion,
     };
@@ -137,7 +155,6 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 
-      // Same-browser instant broadcast
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
         const channel = new BroadcastChannel(BROADCAST_CHANNEL);
         channel.postMessage({ type: 'STATE_UPDATE', payload });
@@ -147,7 +164,6 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         channel.close();
       }
 
-      // Cross-device HTTP post
       fetch('/api/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -158,18 +174,20 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, []);
 
-  // Listen for broadcasts from other tabs on same device
+  // Real-time broadcast receiver
   useEffect(() => {
     if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+
     const channel = new BroadcastChannel(BROADCAST_CHANNEL);
     channel.onmessage = (event) => {
-      if (event.data?.type === 'STATE_UPDATE') {
+      if (event.data?.type === 'STATE_UPDATE' && event.data?.payload) {
         const p = event.data.payload;
         if (p.tables) setTables(p.tables);
         if (p.orders) setOrders(p.orders);
         if (p.menu) setMenu(p.menu);
         if (p.events) setEvents(p.events);
         if (p.eightySixList) setEightySixList(p.eightySixList);
+        if (p.auditLogs) setAuditLogs(p.auditLogs);
         if (p.version) localVersionRef.current = p.version;
       } else if (event.data?.type === 'PLAY_FIRE') {
         sound.playKitchenFire();
@@ -189,6 +207,32 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       channel.close();
     }
   };
+
+  // Append immutable audit record
+  const recordAudit = useCallback((
+    action: AuditLog['action'],
+    tableNumber: string | undefined,
+    serverName: string,
+    description: string,
+    amount?: number,
+    details?: Record<string, any>
+  ): AuditLog[] => {
+    const timestamp = Date.now();
+    const newEntry: AuditLog = {
+      id: `log-${timestamp}-${Math.random().toString(36).substring(2, 6)}`,
+      timestamp,
+      action,
+      tableNumber,
+      serverName,
+      description,
+      amount,
+      hash: generateAuditHash(action, timestamp, tableNumber),
+      details
+    };
+    const updated = [newEntry, ...auditLogs];
+    setAuditLogs(updated);
+    return updated;
+  }, [auditLogs]);
 
   // 1. Seat a Table
   const seatTable = useCallback((tableId: string, guestCount: number, serverName: string, vipNote?: string) => {
@@ -224,10 +268,12 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     });
 
     const nextOrders = [...orders, newOrder];
+    const nextLogs = recordAudit('SEAT', targetTable.number, serverName, `Seated party of ${guestCount}`, undefined, { guestCount, vipNote });
+    
     setTables(nextTables);
     setOrders(nextOrders);
-    syncState(nextTables, nextOrders, menu, events, eightySixList);
-  }, [tables, orders, menu, events, eightySixList, syncState]);
+    syncState(nextTables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [tables, orders, menu, events, eightySixList, recordAudit, syncState]);
 
   // 2. Add Item to Table Order
   const addItemToOrder = useCallback((
@@ -240,6 +286,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const itemDef = menu.find(m => m.id === menuItemId);
     if (!itemDef) return;
 
+    const targetTable = tables.find(t => t.id === tableId);
     const assignedCourse = course || itemDef.courseDefault;
     const newItem: OrderItem = {
       id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -254,79 +301,77 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       sentAt: Date.now(),
     };
 
+    let updatedExisting = false;
     const nextOrders = orders.map(ord => {
       if (ord.tableId === tableId && ord.status === 'open') {
-        return {
-          ...ord,
-          items: [...ord.items, newItem],
-        };
+        updatedExisting = true;
+        return { ...ord, items: [...ord.items, newItem] };
       }
       return ord;
     });
 
-    setOrders(nextOrders);
-    syncState(tables, nextOrders, menu, events, eightySixList);
-  }, [menu, orders, tables, events, eightySixList, syncState]);
+    if (!updatedExisting && targetTable) {
+      const newOrder: Order = {
+        id: `ord-${Date.now()}`,
+        tableId,
+        tableNumber: targetTable.number,
+        serverName: currentServer,
+        guestCount: targetTable.capacity || 2,
+        createdAt: Date.now(),
+        status: 'open',
+        items: [newItem],
+      };
+      nextOrders.push(newOrder);
+    }
 
-  // 3. Remove item from order
+    const nextLogs = recordAudit(
+      'ORDER_ITEM', 
+      targetTable?.number, 
+      currentServer, 
+      `Ordered ${itemDef.name} ($${itemDef.price}) for Seat ${seatNumber}`, 
+      itemDef.price, 
+      { menuItemId, seatNumber, mods }
+    );
+
+    setOrders(nextOrders);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [menu, orders, tables, currentServer, eightySixList, events, recordAudit, syncState]);
+
+  // 3. Remove Item
   const removeItemFromOrder = useCallback((tableId: string, orderItemId: string) => {
-    const nextOrders = orders.map(ord => {
-      if (ord.tableId === tableId && ord.status === 'open') {
-        return {
-          ...ord,
-          items: ord.items.filter(i => i.id !== orderItemId),
-        };
-      }
-      return ord;
-    });
-    setOrders(nextOrders);
-    syncState(tables, nextOrders, menu, events, eightySixList);
-  }, [orders, tables, menu, events, eightySixList, syncState]);
-
-  // 4. Send newly added draft items to kitchen
-  const sendOrder = useCallback((tableId: string) => {
-    sound.playKitchenFire();
-    broadcastSound('PLAY_FIRE');
+    let removedItemName = 'Item';
+    let removedPrice = 0;
+    const targetTable = tables.find(t => t.id === tableId);
 
     const nextOrders = orders.map(ord => {
       if (ord.tableId === tableId && ord.status === 'open') {
-        const updatedItems = ord.items.map(item => {
-          if (item.status === 'draft') {
-            // Course 1 automatically fires upon send, higher courses go to HOLD
-            return {
-              ...item,
-              status: item.course === 1 ? ('fire' as const) : ('hold' as const),
-              firedAt: item.course === 1 ? Date.now() : undefined,
-            };
-          }
-          return item;
-        });
-        return { ...ord, items: updatedItems };
+        const item = ord.items.find(i => i.id === orderItemId);
+        if (item) {
+          removedItemName = item.name;
+          removedPrice = item.price;
+        }
+        return { ...ord, items: ord.items.filter(i => i.id !== orderItemId) };
       }
       return ord;
     });
 
-    const nextTables = tables.map(t => {
-      if (t.id === tableId) {
-        return { ...t, status: 'apps_fired' as const };
-      }
-      return t;
-    });
-
+    const nextLogs = recordAudit('REMOVE_ITEM', targetTable?.number, currentServer, `Removed item: ${removedItemName}`, -removedPrice);
     setOrders(nextOrders);
-    setTables(nextTables);
-    syncState(nextTables, nextOrders, menu, events, eightySixList, 'PLAY_FIRE');
-  }, [orders, tables, menu, events, eightySixList, syncState]);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [orders, tables, currentServer, menu, events, eightySixList, recordAudit, syncState]);
 
-  // 5. Fire Course explicitly (e.g. Server hits "FIRE ENTREES")
+  // 4. Fire Course to Kitchen
   const fireCourse = useCallback((tableId: string, course: CourseNumber) => {
     sound.playKitchenFire();
     broadcastSound('PLAY_FIRE');
 
+    const targetTable = tables.find(t => t.id === tableId);
+    let firedCount = 0;
     const nextOrders = orders.map(ord => {
       if (ord.tableId === tableId && ord.status === 'open') {
-        const updatedItems = ord.items.map(item => {
-          if (item.course === course && (item.status === 'hold' || item.status === 'prep' || item.status === 'draft')) {
+        const nextItems = ord.items.map(item => {
+          if (item.course === course) {
+            firedCount++;
             return {
               ...item,
               status: 'fire' as const,
@@ -335,57 +380,79 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           }
           return item;
         });
-        return { ...ord, items: updatedItems };
+        return { ...ord, items: nextItems };
       }
       return ord;
     });
 
-    const nextTables = tables.map(t => {
-      if (t.id === tableId) {
-        const newStatus = course === 3 ? 'entrees_fired' : course === 4 ? 'dessert' : t.status;
-        return { ...t, status: newStatus as Table['status'] };
-      }
-      return t;
-    });
+    const courseName = course === 1 ? 'Apps' : course === 2 ? 'Salads/Soups' : course === 3 ? 'Entrees' : 'Desserts';
+    const nextLogs = recordAudit('FIRE_COURSE', targetTable?.number, currentServer, `Fired Course ${course} (${courseName}) to kitchen pass (${firedCount} items)`);
 
     setOrders(nextOrders);
-    setTables(nextTables);
-    syncState(nextTables, nextOrders, menu, events, eightySixList, 'PLAY_FIRE');
-  }, [orders, tables, menu, events, eightySixList, syncState]);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs, 'PLAY_FIRE');
+  }, [orders, tables, currentServer, menu, events, eightySixList, recordAudit, syncState]);
 
-  // 6. Update single item status (KDS Line Cooks advance/bump items)
-  const updateItemStatus = useCallback((orderItemId: string, status: ItemStatus) => {
-    sound.playItemBump();
-    broadcastSound('PLAY_BUMP');
+  // 5. Send order
+  const sendOrder = useCallback((tableId: string) => {
+    sound.playKitchenFire();
+    broadcastSound('PLAY_FIRE');
 
+    const targetTable = tables.find(t => t.id === tableId);
     const nextOrders = orders.map(ord => {
-      const hasItem = ord.items.some(i => i.id === orderItemId);
-      if (!hasItem) return ord;
+      if (ord.tableId === tableId && ord.status === 'open') {
+        const nextItems = ord.items.map(item => {
+          if (item.status === 'draft') {
+            return {
+              ...item,
+              status: 'prep' as const,
+              sentAt: Date.now(),
+            };
+          }
+          return item;
+        });
+        return { ...ord, items: nextItems };
+      }
+      return ord;
+    });
 
-      const nextItems = ord.items.map(item => {
-        if (item.id === orderItemId) {
-          return {
-            ...item,
-            status,
-            platedAt: status === 'plated' ? Date.now() : item.platedAt,
-          };
-        }
-        return item;
-      });
-      return { ...ord, items: nextItems };
+    const nextLogs = recordAudit('SEND_ORDER', targetTable?.number, currentServer, `Sent order to kitchen line`);
+    setOrders(nextOrders);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs, 'PLAY_FIRE');
+  }, [orders, tables, currentServer, menu, events, eightySixList, recordAudit, syncState]);
+
+  // 6. Update item status
+  const updateItemStatus = useCallback((orderItemId: string, status: ItemStatus) => {
+    const nextOrders = orders.map(ord => {
+      const targetItem = ord.items.find(i => i.id === orderItemId);
+      if (targetItem) {
+        const nextItems = ord.items.map(item => {
+          if (item.id === orderItemId) {
+            return {
+              ...item,
+              status,
+              ...(status === 'plated' ? { platedAt: Date.now() } : {}),
+            };
+          }
+          return item;
+        });
+        return { ...ord, items: nextItems };
+      }
+      return ord;
     });
 
     setOrders(nextOrders);
-    syncState(tables, nextOrders, menu, events, eightySixList, 'PLAY_BUMP');
-  }, [orders, tables, menu, events, eightySixList, syncState]);
+    syncState(tables, nextOrders, menu, events, eightySixList, auditLogs);
+  }, [orders, tables, menu, events, eightySixList, auditLogs, syncState]);
 
   // 7. Bump entire course on KDS Expo
   const bumpCourse = useCallback((orderId: string, course: CourseNumber) => {
     sound.playItemBump();
     broadcastSound('PLAY_BUMP');
 
+    let tableNum = 'Expo';
     const nextOrders = orders.map(ord => {
       if (ord.id === orderId) {
+        tableNum = ord.tableNumber;
         const nextItems = ord.items.map(item => {
           if (item.course === course) {
             return { ...item, status: 'bumped' as const, platedAt: Date.now() };
@@ -397,16 +464,16 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return ord;
     });
 
+    const nextLogs = recordAudit('BUMP_COURSE', tableNum, 'Expo Kitchen Line', `Course ${course} bumped from pass`);
     setOrders(nextOrders);
-    syncState(tables, nextOrders, menu, events, eightySixList, 'PLAY_BUMP');
-  }, [orders, tables, menu, events, eightySixList, syncState]);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs, 'PLAY_BUMP');
+  }, [orders, tables, menu, events, eightySixList, recordAudit, syncState]);
 
-  // 8. Auto-Split by Seat (The Denver Federal Center Lunch Solution)
+  // 8. Auto-Split by Seat
   const autoSplitBySeat = useCallback((tableId: string) => {
     const order = orders.find(o => o.tableId === tableId && o.status === 'open');
     if (!order) return;
 
-    // Discover all seats represented
     const seatSet = new Set<number>();
     order.items.forEach(i => {
       if (typeof i.seatNumber === 'number') {
@@ -421,7 +488,6 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
     }
 
-    // Identify shared items vs individual items
     const sharedItems = order.items.filter(i => i.seatNumber === 'shared');
     const sharedTotal = sharedItems.reduce((sum, item) => sum + item.price, 0);
     const sharedPerSeat = activeSeats.length > 0 ? sharedTotal / activeSeats.length : 0;
@@ -429,8 +495,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const splitChecks: SplitCheck[] = activeSeats.map((seatNum, idx) => {
       const seatItems = order.items.filter(i => i.seatNumber === seatNum);
       const seatSubtotal = seatItems.reduce((sum, item) => sum + item.price, 0) + sharedPerSeat;
-      const tax = Math.round(seatSubtotal * 0.0825 * 100) / 100; // Lakewood 8.25%
-      // 20% auto-grat if party of 6+
+      const tax = Math.round(seatSubtotal * 0.0825 * 100) / 100;
       const autoGrat = order.guestCount >= 6 ? Math.round(seatSubtotal * 0.20 * 100) / 100 : 0;
       const total = Math.round((seatSubtotal + tax + autoGrat) * 100) / 100;
 
@@ -454,19 +519,27 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return ord;
     });
 
+    const grandTotal = splitChecks.reduce((s, c) => s + c.total, 0);
+    const nextLogs = recordAudit('SPLIT_CHECK', order.tableNumber, currentServer, `Split check by ${activeSeats.length} seats`, grandTotal);
+
     setOrders(nextOrders);
-    syncState(tables, nextOrders, menu, events, eightySixList);
-  }, [orders, tables, menu, events, eightySixList, syncState]);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [orders, tables, currentServer, menu, events, eightySixList, recordAudit, syncState]);
 
   // 9. Settle a split check
   const settleCheck = useCallback((tableId: string, checkId: string, method: SplitCheck['paymentMethod']) => {
     sound.playPaymentSettled();
 
     let allChecksPaid = false;
+    let settledAmount = 0;
+    let tableNum = '';
+
     const nextOrders = orders.map(ord => {
       if (ord.tableId === tableId && ord.status === 'open' && ord.splitChecks) {
+        tableNum = ord.tableNumber;
         const nextChecks = ord.splitChecks.map(chk => {
           if (chk.id === checkId) {
+            settledAmount = chk.total;
             return {
               ...chk,
               paymentStatus: 'paid' as const,
@@ -493,13 +566,16 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       });
     }
 
+    const nextLogs = recordAudit('SETTLE_CHECK', tableNum, currentServer, `Settled check via ${method}`, settledAmount, { checkId, method });
+
     setOrders(nextOrders);
     setTables(nextTables);
-    syncState(nextTables, nextOrders, menu, events, eightySixList);
-  }, [orders, tables, menu, events, eightySixList, syncState]);
+    syncState(nextTables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [orders, tables, currentServer, menu, events, eightySixList, recordAudit, syncState]);
 
   // 10. Close and wipe table
   const closeTable = useCallback((tableId: string) => {
+    const targetTable = tables.find(t => t.id === tableId);
     const nextTables = tables.map(t => {
       if (t.id === tableId) {
         return {
@@ -522,31 +598,37 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return ord;
     });
 
+    const nextLogs = recordAudit('CLOSE_TABLE', targetTable?.number, currentServer, `Table closed and reset to vacant`);
+
     setTables(nextTables);
     setOrders(nextOrders);
-    syncState(nextTables, nextOrders, menu, events, eightySixList);
-  }, [tables, orders, menu, events, eightySixList, syncState]);
+    syncState(nextTables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [tables, orders, currentServer, menu, events, eightySixList, recordAudit, syncState]);
 
-  // 11. 86 Board Toggle
+  // 11. Toggle 86 Status
   const toggle86 = useCallback((menuItemId: string) => {
-    let next86: string[];
-    if (eightySixList.includes(menuItemId)) {
-      next86 = eightySixList.filter(id => id !== menuItemId);
-    } else {
-      next86 = [...eightySixList, menuItemId];
-    }
-    setEightySixList(next86);
-    syncState(tables, orders, menu, events, next86);
-  }, [eightySixList, tables, orders, menu, events, syncState]);
+    const item = menu.find(m => m.id === menuItemId);
+    const itemName = item ? item.name : menuItemId;
+    const isNow86 = !eightySixList.includes(menuItemId);
+    const next86 = isNow86
+      ? [...eightySixList, menuItemId]
+      : eightySixList.filter(id => id !== menuItemId);
 
-  // 12. Decrement Cellar stock
+    const nextLogs = recordAudit('TOGGLE_86', 'Bar/Kitchen', currentServer, `${isNow86 ? '86d (Out of Stock)' : 'Restocked'}: ${itemName}`);
+
+    setEightySixList(next86);
+    syncState(tables, orders, menu, events, next86, nextLogs);
+  }, [eightySixList, menu, tables, orders, events, currentServer, recordAudit, syncState]);
+
+  // 12. Decrement cellar stock
   const decrementCellar = useCallback((menuItemId: string) => {
+    let wineName = '';
+    let remaining = 0;
     const nextMenu = menu.map(m => {
       if (m.id === menuItemId && m.wineDetails) {
         const nextStock = Math.max(0, m.wineDetails.cellarStock - 1);
-        if (nextStock === 0 && !eightySixList.includes(menuItemId)) {
-          setEightySixList(prev => [...prev, menuItemId]);
-        }
+        wineName = m.name;
+        remaining = nextStock;
         return {
           ...m,
           wineDetails: {
@@ -558,9 +640,11 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return m;
     });
 
+    const nextLogs = recordAudit('CELLAR_DECREMENT', 'Wine Room', currentServer, `Depleted 1 bottle of ${wineName}. Bin Stock: ${remaining}`);
+
     setMenu(nextMenu);
-    syncState(tables, orders, nextMenu, events, eightySixList);
-  }, [menu, eightySixList, tables, orders, events, syncState]);
+    syncState(tables, orders, nextMenu, events, eightySixList, nextLogs);
+  }, [menu, eightySixList, tables, orders, events, currentServer, recordAudit, syncState]);
 
   // 13. Reset Demo State
   const resetDemo = useCallback(() => {
@@ -570,6 +654,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setOrders(INITIAL_ORDERS);
     setMenu(MENU_ITEMS);
     setEvents(INITIAL_EVENTS);
+    setAuditLogs(INITIAL_AUDIT_LOGS);
     setEightySixList(['app-octopus']);
     setActiveTableId('tbl-23');
     setActiveStation('all');
@@ -586,6 +671,7 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         orders,
         menu,
         events,
+        auditLogs,
         activeTableId,
         activeStation,
         eightySixList,

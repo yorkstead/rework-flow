@@ -14,11 +14,13 @@ import {
   CheckCircle,
   Volume2,
   Share2,
-  Camera
+  Camera,
+  ShieldCheck
 } from 'lucide-react';
 import { RoiCalculatorModal } from './RoiCalculatorModal';
 import { QRCodeModal } from './QRCodeModal';
 import { MarketingKitModal } from './MarketingKitModal';
+import { PilotGuaranteeModal } from './PilotGuaranteeModal';
 import { sound } from '../lib/audio';
 
 interface PitchToolbarProps {
@@ -46,6 +48,7 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
   const [roiModalOpen, setRoiModalOpen] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [marketingModalOpen, setMarketingModalOpen] = useState(false);
+  const [pilotModalOpen, setPilotModalOpen] = useState(false);
   const [activeScenarioName, setActiveScenarioName] = useState<string | null>(null);
 
   // Scenario 1: Fed Center Lunch Rush (1-tap speed split & settle)
@@ -176,6 +179,16 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
 
             <div className="h-4 w-px bg-[#262a34] mx-0.5 shrink-0 hidden sm:block"></div>
 
+            {/* Zero-Risk 14-Day Pilot Guarantee Trigger */}
+            <button
+              onClick={() => setPilotModalOpen(true)}
+              className="px-2.5 py-1 bg-[#102419] hover:bg-[#163524] text-emerald-400 border border-emerald-500/70 rounded-lg text-xs font-black flex items-center gap-1.5 transition shadow-sm shrink-0 whitespace-nowrap"
+              title="Offer a 7 or 14-Day In-Restaurant Trial with Immutable Audit Logging"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>14-Day Risk-Free Pilot</span>
+            </button>
+
             {/* ROI Calculator Trigger */}
             <button
               onClick={() => setRoiModalOpen(true)}
@@ -224,6 +237,11 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
       <MarketingKitModal
         isOpen={marketingModalOpen}
         onClose={() => setMarketingModalOpen(false)}
+      />
+
+      <PilotGuaranteeModal
+        isOpen={pilotModalOpen}
+        onClose={() => setPilotModalOpen(false)}
       />
     </>
   );

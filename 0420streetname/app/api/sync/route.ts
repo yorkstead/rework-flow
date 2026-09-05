@@ -3,7 +3,8 @@ import { INITIAL_TABLES } from '@/lib/data/tables';
 import { INITIAL_ORDERS } from '@/lib/data/orders';
 import { MENU_ITEMS } from '@/lib/data/menu';
 import { INITIAL_EVENTS } from '@/lib/data/events';
-import { Table, Order, MenuItem, EventRoom } from '@/lib/types';
+import { INITIAL_AUDIT_LOGS } from '@/lib/data/auditLogs';
+import { Table, Order, MenuItem, EventRoom, AuditLog } from '@/lib/types';
 
 interface ServerUnionState {
   tables: Table[];
@@ -11,6 +12,7 @@ interface ServerUnionState {
   menu: MenuItem[];
   events: EventRoom[];
   eightySixList: string[];
+  auditLogs: AuditLog[];
   version: number;
   lastSound?: 'PLAY_FIRE' | 'PLAY_BUMP' | null;
 }
@@ -26,6 +28,7 @@ if (!globalThis.__unionServerState) {
     menu: MENU_ITEMS,
     events: INITIAL_EVENTS,
     eightySixList: ['app-octopus'],
+    auditLogs: INITIAL_AUDIT_LOGS,
     version: Date.now(),
     lastSound: null,
   };
@@ -41,6 +44,7 @@ export async function GET(request: Request) {
       menu: MENU_ITEMS,
       events: INITIAL_EVENTS,
       eightySixList: ['app-octopus'],
+      auditLogs: INITIAL_AUDIT_LOGS,
       version: Date.now(),
       lastSound: null,
     };
@@ -69,6 +73,7 @@ export async function POST(request: Request) {
         menu: MENU_ITEMS,
         events: INITIAL_EVENTS,
         eightySixList: ['app-octopus'],
+        auditLogs: INITIAL_AUDIT_LOGS,
         version: Date.now(),
         lastSound: null,
       };
@@ -79,6 +84,7 @@ export async function POST(request: Request) {
     if (body.menu) globalThis.__unionServerState.menu = body.menu;
     if (body.events) globalThis.__unionServerState.events = body.events;
     if (body.eightySixList) globalThis.__unionServerState.eightySixList = body.eightySixList;
+    if (body.auditLogs) globalThis.__unionServerState.auditLogs = body.auditLogs;
     if (body.sound) globalThis.__unionServerState.lastSound = body.sound;
 
     globalThis.__unionServerState.version = Date.now();

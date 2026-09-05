@@ -110,3 +110,16 @@ export interface EventRoom {
   currentSpend: number;
   contractNotes: string;
 }
+
+export interface AuditLog {
+  id: string;
+  timestamp: number;
+  action: 'SEAT' | 'ORDER_ITEM' | 'REMOVE_ITEM' | 'FIRE_COURSE' | 'SEND_ORDER' | 'BUMP_COURSE' | 'SPLIT_CHECK' | 'SETTLE_CHECK' | 'CLOSE_TABLE' | 'TOGGLE_86' | 'CELLAR_DECREMENT' | 'SYSTEM_RECONCILE';
+  tableNumber?: string;
+  serverName: string;
+  description: string;
+  hash: string;
+  amount?: number;
+  details?: Record<string, any>;
+}
+
