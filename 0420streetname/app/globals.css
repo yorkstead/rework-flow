@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* 240 Union Refined Palette: Subtle, low-fatigue slate-charcoal with warm bronze highlights */
+    --tu-bg: #111215;        /* Deep neutral charcoal matte background */
+    --tu-bg-2: #16181d;      /* Subtle elevated panel */
+    --tu-ink: #0c0d10;       /* Recessed dark fields */
+    --tu-panel: #1a1d24;     /* Card background with soft contrast */
+    --tu-border: #262a34;    /* Quiet border */
+    --tu-border-subtle: #1e222a; /* Extra subtle divider */
+    
+    /* Warm Bronze Accent (subtle, non-jarring) */
+    --tu-copper: #c29b68;    /* Refined muted bronze/copper */
+    --tu-copper-muted: rgba(194, 155, 104, 0.14);
+    
+    /* Clear Text Hierarchy */
+    --tu-cream: #e2e4ea;     /* Clean crisp primary text */
+    --tu-cream-d: #9ca3af;   /* Muted secondary labels */
+    
+    /* Semantic Warning / Alert Colors (High clarity, zero muddy noise) */
+    --alert-rose: #f43f5e;   /* Urgent rush / 86 out of stock */
+    --alert-rose-bg: rgba(244, 63, 94, 0.12);
+    --alert-rose-border: rgba(244, 63, 94, 0.35);
+
+    --alert-amber: #f59e0b;  /* Kitchen cooking / 10m timer / draft */
+    --alert-amber-bg: rgba(245, 158, 11, 0.12);
+    --alert-amber-border: rgba(245, 158, 11, 0.35);
+
+    --alert-emerald: #10b981;/* Fired course / plated / paid */
+    --alert-emerald-bg: rgba(16, 185, 129, 0.12);
+    --alert-emerald-border: rgba(16, 185, 129, 0.35);
+
+    --alert-blue: #3b82f6;   /* Split checks / POS controls */
+    --alert-blue-bg: rgba(59, 130, 246, 0.12);
+    --alert-blue-border: rgba(59, 130, 246, 0.35);
+  }
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: clip;
+  position: relative;
+  background-color: #111215;
+  color: #e2e4ea;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Headings brand font feel */
+h1, h2, h3, .font-serif {
+  font-family: "Cormorant Garamond", "Arapey", Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+/* Custom Scrollbars in subtle slate */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111215;
+}
+::-webkit-scrollbar-thumb {
+  background: #262a34;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b4252;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.pulse-urgent {
+  animation: pulse-subtle 1.4s infinite ease-in-out;
+}
+

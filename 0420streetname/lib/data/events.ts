@@ -1,0 +1,43 @@
+import { EventRoom } from '../types';
+
+export const INITIAL_EVENTS: EventRoom[] = [
+  {
+    id: 'evt-wine-room',
+    roomName: 'The Wine Room',
+    section: 'wine_room',
+    maxCapacity: 28,
+    fnbMinimum: 2200,
+    depositPaid: 500,
+    hostName: 'Katherine Miller',
+    hostCompany: 'Lockheed Martin Space Systems',
+    eventTime: 'Tonight, 6:30 PM - 9:30 PM',
+    currentSpend: 1680,
+    contractNotes: 'Requires single master folio billed to corporate card; $500 deposit already paid via OpenTable private dining portal.',
+  },
+  {
+    id: 'evt-lakewood-room',
+    roomName: 'The Lakewood Room',
+    section: 'lakewood_room',
+    maxCapacity: 45,
+    fnbMinimum: 3500,
+    depositPaid: 1000,
+    hostName: 'Dr. Arthur Sterling',
+    hostCompany: 'Denver Medical Association',
+    eventTime: 'Tonight, 7:00 PM - 10:00 PM',
+    currentSpend: 2420,
+    contractNotes: 'Pre-set 3-course menu: Burrata, choice of Sea Bass or Wagyu Flank, Valrhona Molten Cake. Open bar up to $1,200 cap then cash bar.',
+  },
+  {
+    id: 'evt-patio-buyout',
+    roomName: 'The Enclosed Patio',
+    section: 'patio',
+    maxCapacity: 40,
+    fnbMinimum: 2800,
+    depositPaid: 750,
+    hostName: 'James & Sarah Reynolds',
+    hostCompany: 'Reynolds Wedding Rehearsal',
+    eventTime: 'Tomorrow, 5:30 PM - 8:30 PM',
+    currentSpend: 0,
+    contractNotes: 'All-weather heaters active, passed appetizers + wood-fired pizzas + house wine and craft draft.',
+  },
+];

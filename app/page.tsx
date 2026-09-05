@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Truck, LayoutDashboard, ArrowRight, ShieldCheck, Zap } from "lucide-react";
+import { Truck, LayoutDashboard, ArrowRight, ShieldCheck, Zap, Video } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -80,6 +80,36 @@ export default function HomePage() {
               </div>
             </div>
             <ArrowRight className="w-6 h-6 text-amber-400 group-hover:translate-x-1 transition shrink-0 ml-4" />
+          </Link>
+
+          {/* Card: Commercial & Video Pitch */}
+          <Link
+            href="/commercial"
+            className="group relative flex items-center justify-between p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#142338] via-[#102a45] to-[#142338] border-2 border-sky-500/40 hover:border-sky-400 transition-all hover:scale-[1.01] shadow-xl text-left"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0">
+                <Video className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-sky-950/80 text-sky-400 font-bold border border-sky-500/30 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+                    Remotion Studio
+                  </span>
+                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 font-bold border border-amber-500/30">
+                    60s Video Pitch
+                  </span>
+                </div>
+                <h2 className="text-lg font-black text-white group-hover:text-sky-300 transition mt-1">
+                  Commercial & Video Pitch Presentation
+                </h2>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Remotion-powered programmatic commercial with synchronized voiceover teleprompter and 1080p MP4 export.
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-6 h-6 text-sky-400 group-hover:translate-x-1 transition shrink-0 ml-4" />
           </Link>
         </div>
 
