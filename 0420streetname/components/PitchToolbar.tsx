@@ -12,10 +12,13 @@ import {
   Columns2, 
   Play, 
   CheckCircle,
-  Volume2
+  Volume2,
+  Share2,
+  Camera
 } from 'lucide-react';
 import { RoiCalculatorModal } from './RoiCalculatorModal';
 import { QRCodeModal } from './QRCodeModal';
+import { MarketingKitModal } from './MarketingKitModal';
 import { sound } from '../lib/audio';
 
 interface PitchToolbarProps {
@@ -42,6 +45,7 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
 
   const [roiModalOpen, setRoiModalOpen] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [marketingModalOpen, setMarketingModalOpen] = useState(false);
   const [activeScenarioName, setActiveScenarioName] = useState<string | null>(null);
 
   // Scenario 1: Fed Center Lunch Rush (1-tap speed split & settle)
@@ -182,6 +186,16 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
               <span>ROI ($260k+)</span>
             </button>
 
+            {/* Google Maps & Socials Marketing Kit */}
+            <button
+              onClick={() => setMarketingModalOpen(true)}
+              className="px-2.5 py-1 bg-[#1f1b14] hover:bg-[#2c261c] text-[#c29b68] border border-[#c29b68]/60 rounded-lg text-xs font-bold flex items-center gap-1 transition shadow-sm shrink-0 whitespace-nowrap"
+              title="Printable Table Tents, Check Inserts, Google Maps 4K Photos & Reels"
+            >
+              <Camera className="w-3.5 h-3.5 text-[#c29b68]" />
+              <span>Maps & Socials</span>
+            </button>
+
             {/* QR Phone Pairing */}
             <button
               onClick={() => setQrModalOpen(true)}
@@ -205,6 +219,11 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
         isOpen={qrModalOpen}
         onClose={() => setQrModalOpen(false)}
         lanUrl="http://100.83.16.11:3005"
+      />
+
+      <MarketingKitModal
+        isOpen={marketingModalOpen}
+        onClose={() => setMarketingModalOpen(false)}
       />
     </>
   );
