@@ -13,7 +13,9 @@ import {
   CheckCircle2, 
   ArrowRight,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  Search,
+  Filter
 } from 'lucide-react';
 
 export const PrivateDiningView: React.FC = () => {
@@ -25,7 +27,36 @@ export const PrivateDiningView: React.FC = () => {
     decrementCellar 
   } = useUnionStore();
 
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [selectedVarietal, setSelectedVarietal] = React.useState<string>('all');
+
   const wineAndReserveItems = menu.filter(m => m.category === 'wine' || m.wineDetails);
+
+  // Extract distinct varietals for quick pills
+  const varietals = React.useMemo(() => {
+    const set = new Set<string>();
+    wineAndReserveItems.forEach(item => {
+      if (item.wineDetails?.varietal) {
+        set.add(item.wineDetails.varietal);
+      }
+    });
+    return Array.from(set).sort();
+  }, [wineAndReserveItems]);
+
+  const filteredWineItems = React.useMemo(() => {
+    return wineAndReserveItems.filter(item => {
+      const matchesSearch = 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.wineDetails?.binNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.wineDetails?.vintage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.wineDetails?.varietal.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.wineDetails?.region.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesVarietal = selectedVarietal === 'all' || item.wineDetails?.varietal === selectedVarietal;
+
+      return matchesSearch && matchesVarietal;
+    });
+  }, [wineAndReserveItems, searchQuery, selectedVarietal]);
 
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-6">
@@ -154,7 +185,7 @@ export const PrivateDiningView: React.FC = () => {
 
       {/* SECTION 2: SOMMELIER CELLAR & REAL-TIME 86 BOARD */}
       <div className="space-y-3 pt-4 border-t border-[#262a34]">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-base font-bold text-[#e2e4ea] flex items-center gap-2 font-serif">
               <Wine className="w-4 h-4 text-[#c29b68]" />
@@ -167,10 +198,57 @@ export const PrivateDiningView: React.FC = () => {
               Instant vintage tracking, cellar bin depletion, and one-tap 86 cutoff prevents floor servers from selling unavailable bottles.
             </p>
           </div>
+
+          <div className="flex items-center gap-2 text-xs font-mono text-[#9ca3af]">
+            <span>{filteredWineItems.length} of {wineAndReserveItems.length} vintages</span>
+          </div>
         </div>
 
+        {/* Sommelier Cellar Search & Varietal Filter Toolbar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-[#16181d] p-2.5 rounded-xl border border-[#262a34]">
+          {/* Search Box */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-[#9ca3af] absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by Bin # (e.g. 412), Vintage (2018), Varietal (Cabernet), or Region..."
+              className="w-full bg-[#111215] border border-[#262a34] rounded-lg pl-9 pr-3 py-1.5 text-xs text-[#e2e4ea] placeholder-[#6b7280] focus:outline-none focus:border-[#c29b68] transition font-mono"
+            />
+          </div>
+
+          {/* Varietal Filter Pills */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            <button
+              onClick={() => setSelectedVarietal('all')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition whitespace-nowrap ${
+                selectedVarietal === 'all'
+                  ? 'bg-[#c29b68] text-[#111215] shadow'
+                  : 'bg-[#111215] text-[#9ca3af] hover:text-[#e2e4ea] border border-[#262a34]'
+              }`}
+            >
+              All Varietals
+            </button>
+            {varietals.map(v => (
+              <button
+                key={v}
+                onClick={() => setSelectedVarietal(v)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition whitespace-nowrap ${
+                  selectedVarietal === v
+                    ? 'bg-[#c29b68] text-[#111215] shadow'
+                    : 'bg-[#111215] text-[#9ca3af] hover:text-[#e2e4ea] border border-[#262a34]'
+                }`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {wineAndReserveItems.map(item => {
+          {filteredWineItems.map(item => {
             const is86 = eightySixList.includes(item.id);
             const stock = item.wineDetails ? item.wineDetails.cellarStock : 0;
 
