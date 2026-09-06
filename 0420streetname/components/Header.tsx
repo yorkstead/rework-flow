@@ -65,7 +65,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const activeOrdersCount = orders.filter(o => o.status === 'open').length;
 
   return (
-    <header className="border-b border-[#262a34] bg-[#111215]/95 backdrop-blur sticky top-0 z-50">
+    <>
+      <header className="border-b border-[#262a34] bg-[#111215]/95 backdrop-blur sticky top-0 z-40">
       {/* Top utility bar */}
       <div className="px-3 py-1 bg-[#0c0d10] border-b border-[#1e222a] flex items-center justify-between text-xs text-[#9ca3af] max-w-full overflow-hidden">
         <div className="flex items-center gap-2 truncate">
@@ -186,18 +187,6 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
         </div>
       </div>
 
-      {/* Toast vs. UnionOS TCO Comparison Modal */}
-      <ToastComparisonModal
-        isOpen={toastComparisonOpen}
-        onClose={() => setToastComparisonOpen(false)}
-      />
-
-      {/* Z-Report Closeout Modal */}
-      <ZReportModal
-        isOpen={zReportModalOpen}
-        onClose={() => setZReportModalOpen(false)}
-      />
-
       {/* Main navigation header */}
       <div className="px-3 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2.5 max-w-full overflow-hidden">
         <div className="flex items-center gap-3">
@@ -300,5 +289,18 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
         </nav>
       </div>
     </header>
+
+    {/* Toast vs. UnionOS TCO Comparison Modal (Mounted outside sticky header) */}
+    <ToastComparisonModal
+      isOpen={toastComparisonOpen}
+      onClose={() => setToastComparisonOpen(false)}
+    />
+
+    {/* Z-Report Closeout Modal (Mounted outside sticky header) */}
+    <ZReportModal
+      isOpen={zReportModalOpen}
+      onClose={() => setZReportModalOpen(false)}
+    />
+  </>
   );
 };
