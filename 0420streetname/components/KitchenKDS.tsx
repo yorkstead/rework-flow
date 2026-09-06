@@ -15,8 +15,10 @@ import {
   ChefHat,
   Filter,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Printer
 } from 'lucide-react';
+import { ThermalTicketModal } from './ThermalTicketModal';
 
 export const KitchenKDS: React.FC = () => {
   const { 
@@ -30,6 +32,7 @@ export const KitchenKDS: React.FC = () => {
   } = useUnionStore();
 
   const [currentTime, setCurrentTime] = useState<number>(Date.now());
+  const [selectedTicketOrder, setSelectedTicketOrder] = useState<any | null>(null);
 
   // Tick clock every 5 seconds for live kitchen timers
   useEffect(() => {
@@ -173,16 +176,29 @@ export const KitchenKDS: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 font-mono font-bold text-xs">
-                      <Clock className="w-3.5 h-3.5 text-[#c29b68]" />
-                      <span>{elapsedMins}m</span>
+                  <div className="text-right flex items-center gap-2">
+                    <div>
+                      <div className="flex items-center justify-end gap-1 font-mono font-bold text-xs">
+                        <Clock className="w-3.5 h-3.5 text-[#c29b68]" />
+                        <span>{elapsedMins}m</span>
+                      </div>
+                      {isUrgent && (
+                        <span className="text-[9px] font-mono tracking-widest font-black uppercase text-rose-400">
+                          RUSH PASS
+                        </span>
+                      )}
                     </div>
-                    {isUrgent && (
-                      <span className="text-[9px] font-mono tracking-widest font-black uppercase text-rose-400">
-                        RUSH PASS
-                      </span>
-                    )}
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTicketOrder(order);
+                      }}
+                      title="View & Print Physical 80mm Kitchen Thermal Chit"
+                      className="p-1.5 rounded-lg bg-[#111215] hover:bg-[#222731] border border-[#262a34] hover:border-[#c29b68]/60 text-[#c29b68] transition"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -341,6 +357,16 @@ export const KitchenKDS: React.FC = () => {
           <p className="text-sm font-semibold text-[#e2e4ea]">Pass is clear!</p>
           <p className="text-xs text-[#9ca3af]">No active tickets waiting at station: {activeStation.toUpperCase()}</p>
         </div>
+      )}
+
+      {/* 80mm Kitchen Thermal Chit Modal */}
+      {selectedTicketOrder && (
+        <ThermalTicketModal
+          order={selectedTicketOrder}
+          table={tables.find(t => t.id === selectedTicketOrder.tableId)}
+          isOpen={!!selectedTicketOrder}
+          onClose={() => setSelectedTicketOrder(null)}
+        />
       )}
     </div>
   );

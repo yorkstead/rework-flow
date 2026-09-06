@@ -16,8 +16,12 @@ import {
   Check, 
   ChevronRight,
   PlusCircle,
-  Tag
+  Tag,
+  Award,
+  Printer
 } from 'lucide-react';
+import { VIPGuestCard } from './VIPGuestCard';
+import { ThermalTicketModal } from './ThermalTicketModal';
 
 interface TerminalPOSProps {
   onOpenSplit: (tableId: string) => void;
@@ -46,6 +50,8 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [pendingMods, setPendingMods] = useState<string[]>([]);
   const [activeItemForMods, setActiveItemForMods] = useState<string | null>(null);
+  const [showVIPModal, setShowVIPModal] = useState<boolean>(false);
+  const [showThermalTicket, setShowThermalTicket] = useState<boolean>(false);
 
   const categories: { id: MenuCategory | 'all'; label: string }[] = [
     { id: 'all', label: 'All Items' },
@@ -156,6 +162,28 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
           </div>
 
           <div className="flex items-center gap-2">
+            {activeTable?.vipGuest && (
+              <button
+                onClick={() => setShowVIPModal(true)}
+                className="px-2.5 py-1 bg-gradient-to-r from-[#2a1d12] to-[#1a1c22] hover:border-[#c29b68] text-[#c29b68] border border-[#c29b68]/60 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm animate-pulse"
+                title="View VIP Regular Profile"
+              >
+                <Award className="w-3.5 h-3.5" />
+                <span>VIP: {activeTable.vipGuest.name.split(' ')[0]}</span>
+              </button>
+            )}
+
+            {activeOrder && (
+              <button
+                onClick={() => setShowThermalTicket(true)}
+                className="px-2.5 py-1 bg-[#111215] hover:bg-[#222731] text-[#c29b68] border border-[#c29b68]/50 rounded-lg text-xs font-bold flex items-center gap-1 transition shadow-sm"
+                title="View & Print 80mm Jagged-Edge Kitchen Thermal Ticket"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Print Chit</span>
+              </button>
+            )}
+
             {activeTableId && (
               <button
                 onClick={() => onOpenSplit(activeTableId)}
@@ -524,6 +552,31 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
           })}
         </div>
       </div>
+
+      {/* Lakewood VIP Regular Profile Modal */}
+      {showVIPModal && activeTable && activeTable.vipGuest && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setShowVIPModal(false)}
+        >
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg">
+            <VIPGuestCard 
+              table={activeTable} 
+              onClose={() => setShowVIPModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 80mm Physical Thermal Ticket Chit */}
+      {showThermalTicket && activeOrder && (
+        <ThermalTicketModal
+          order={activeOrder}
+          table={activeTable}
+          isOpen={showThermalTicket}
+          onClose={() => setShowThermalTicket(false)}
+        />
+      )}
     </div>
   );
 };

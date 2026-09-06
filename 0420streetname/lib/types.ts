@@ -2,6 +2,18 @@ export type TableSection = 'dining' | 'bar' | 'patio' | 'wine_room' | 'lakewood_
 
 export type TableStatus = 'vacant' | 'seated' | 'apps_fired' | 'entrees_fired' | 'dessert' | 'paid';
 
+export interface VIPGuestProfile {
+  name: string;
+  badge: string; // e.g. 'St. Anthony Chief of Surgery', 'Federal Center Director', 'Lakewood Founder'
+  visitCount: number;
+  preferredWine: string;
+  preferredCocktail?: string;
+  dietary?: string;
+  notes: string;
+  annualSpendTier: 'Platinum' | 'Gold' | 'Lakewood Regular';
+  favoriteItems?: string[]; // IDs or names for 1-click reorder
+}
+
 export interface Table {
   id: string;
   number: string;
@@ -13,6 +25,7 @@ export interface Table {
   seatedAt?: number;
   guestCount?: number;
   vipNote?: string;
+  vipGuest?: VIPGuestProfile;
   currentOrderId?: string;
 }
 

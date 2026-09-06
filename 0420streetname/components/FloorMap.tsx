@@ -14,8 +14,12 @@ import {
   Wine, 
   Layers,
   Search,
-  ArrowRight
+  ArrowRight,
+  Award,
+  Smartphone
 } from 'lucide-react';
+import { VIPGuestCard } from './VIPGuestCard';
+import { WaitlistDrawer, WaitlistParty } from './WaitlistDrawer';
 
 interface FloorMapProps {
   onOpenPOS: (tableId: string) => void;
@@ -36,6 +40,8 @@ export const FloorMap: React.FC<FloorMapProps> = ({ onOpenPOS, onOpenSplit }) =>
   const [selectedSection, setSelectedSection] = useState<TableSection | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [seatingModalTable, setSeatingModalTable] = useState<Table | null>(null);
+  const [selectedVIPModalTable, setSelectedVIPModalTable] = useState<Table | null>(null);
+  const [showWaitlist, setShowWaitlist] = useState<boolean>(false);
   const [guestCountInput, setGuestCountInput] = useState<number>(4);
   const [vipNoteInput, setVipNoteInput] = useState<string>('');
 
@@ -225,15 +231,28 @@ export const FloorMap: React.FC<FloorMapProps> = ({ onOpenPOS, onOpenSplit }) =>
           ))}
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" />
-          <input
-            type="text"
-            placeholder="Search table, server, note..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-[#111215] border border-[#262a34] rounded-lg text-xs text-[#e2e4ea] placeholder-[#9ca3af]/60 focus:outline-none focus:border-[#c29b68]"
-          />
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-60">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" />
+            <input
+              type="text"
+              placeholder="Search table, server, note..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 bg-[#111215] border border-[#262a34] rounded-lg text-xs text-[#e2e4ea] placeholder-[#9ca3af]/60 focus:outline-none focus:border-[#c29b68]"
+            />
+          </div>
+
+          <button
+            onClick={() => setShowWaitlist(true)}
+            className="px-3 py-1.5 bg-gradient-to-r from-[#221c15] to-[#1a1d24] hover:border-[#c29b68] text-[#c29b68] border border-[#c29b68]/60 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shrink-0 shadow-sm"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-[#c29b68]" />
+            <span>Host Waitlist</span>
+            <span className="font-mono text-[10px] bg-[#c29b68]/20 text-[#c29b68] px-1.5 py-0.2 rounded font-bold">
+              3
+            </span>
+          </button>
         </div>
       </div>
 
@@ -297,11 +316,29 @@ export const FloorMap: React.FC<FloorMapProps> = ({ onOpenPOS, onOpenSplit }) =>
                       )}
                     </div>
 
-                    {table.vipNote && (
+                    {table.vipGuest ? (
+                      <div 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedVIPModalTable(table);
+                        }}
+                        className="mt-1.5 p-2 bg-gradient-to-r from-[#221c15] to-[#16181d] border border-[#c29b68]/40 hover:border-[#c29b68] rounded-lg text-[11px] text-[#e2e4ea] cursor-pointer transition group/vip flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Award className="w-3.5 h-3.5 text-[#c29b68] shrink-0" />
+                          <span className="font-bold text-[#c29b68] truncate">
+                            {table.vipGuest.name}
+                          </span>
+                        </div>
+                        <span className="text-[9px] font-mono font-bold bg-[#c29b68]/20 text-[#c29b68] px-1.5 py-0.5 rounded uppercase shrink-0">
+                          VIP Card
+                        </span>
+                      </div>
+                    ) : table.vipNote ? (
                       <div className="mt-1.5 p-1.5 bg-[#111215] border border-[#262a34] rounded text-[11px] text-[#e2e4ea] leading-snug">
                         {table.vipNote}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 ) : (
                   <div className="mt-4 py-3 text-center text-xs text-[#9ca3af]/50 border border-dashed border-[#262a34] rounded-lg">
@@ -454,6 +491,42 @@ export const FloorMap: React.FC<FloorMapProps> = ({ onOpenPOS, onOpenSplit }) =>
           </div>
         </div>
       )}
+
+      {/* Lakewood VIP Profile Modal */}
+      {selectedVIPModalTable && selectedVIPModalTable.vipGuest && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setSelectedVIPModalTable(null)}
+        >
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg">
+            <VIPGuestCard 
+              table={selectedVIPModalTable} 
+              onClose={() => setSelectedVIPModalTable(null)}
+              onSelectTable={() => {
+                const tableId = selectedVIPModalTable.id;
+                setSelectedVIPModalTable(null);
+                onOpenPOS(tableId);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Host Stand SMS Waitlist & Table Ready Pager Drawer */}
+      <WaitlistDrawer
+        isOpen={showWaitlist}
+        onClose={() => setShowWaitlist(false)}
+        onSeatParty={(party) => {
+          setShowWaitlist(false);
+          // Find first vacant table that fits party
+          const vacantTable = tables.find(t => t.status === 'vacant' && t.capacity >= party.partySize) || tables.find(t => t.status === 'vacant');
+          if (vacantTable) {
+            setSeatingModalTable(vacantTable);
+            setGuestCountInput(party.partySize);
+            setVipNoteInput(`${party.guestName} (${party.phone}) • ${party.notes || 'Walk-in waitlist'}`);
+          }
+        }}
+      />
     </div>
   );
 };
