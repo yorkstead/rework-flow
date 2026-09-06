@@ -650,11 +650,16 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const decrementCellar = useCallback((menuItemId: string) => {
     let wineName = '';
     let remaining = 0;
+    let auto86 = false;
+
     const nextMenu = menu.map(m => {
       if (m.id === menuItemId && m.wineDetails) {
         const nextStock = Math.max(0, m.wineDetails.cellarStock - 1);
         wineName = m.name;
         remaining = nextStock;
+        if (nextStock === 0) {
+          auto86 = true;
+        }
         return {
           ...m,
           wineDetails: {
@@ -666,10 +671,23 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return m;
     });
 
-    const nextLogs = recordAudit('CELLAR_DECREMENT', 'Wine Room', currentServer, `Depleted 1 bottle of ${wineName}. Bin Stock: ${remaining}`);
+    let next86 = eightySixList;
+    if (auto86 && !eightySixList.includes(menuItemId)) {
+      next86 = [...eightySixList, menuItemId];
+    }
+
+    const nextLogs = recordAudit(
+      'CELLAR_DECREMENT', 
+      'Wine Room', 
+      currentServer, 
+      auto86 
+        ? `Depleted final bottle of ${wineName}. AUTO-86 CASCADED ACROSS POS/KDS.`
+        : `Depleted 1 bottle of ${wineName}. Bin Stock: ${remaining}`
+    );
 
     setMenu(nextMenu);
-    syncState(tables, orders, nextMenu, events, eightySixList, nextLogs);
+    setEightySixList(next86);
+    syncState(tables, orders, nextMenu, events, next86, nextLogs);
   }, [menu, eightySixList, tables, orders, events, currentServer, recordAudit, syncState]);
 
   // 13. Reset Demo State

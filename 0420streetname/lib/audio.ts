@@ -2,9 +2,10 @@
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
+  public isMuted: boolean = false;
 
   private getContext(): AudioContext | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined' || this.isMuted) return null;
     if (!this.ctx) {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioContextClass) {
@@ -17,8 +18,90 @@ class SoundEngine {
     return this.ctx;
   }
 
+  toggleMute(): boolean {
+    this.isMuted = !this.isMuted;
+    return this.isMuted;
+  }
+
+  // Tactile mechanical micro-click for items, modifiers, seats
+  playTap() {
+    if (this.isMuted) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + 0.03);
+
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.03);
+    } catch {
+      // Ignore
+    }
+  }
+
+  // Authentic thermal chit printer head buzz and zip
+  playThermalPrint() {
+    if (this.isMuted) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      // 4 rapid stepper motor pulses
+      for (let i = 0; i < 4; i++) {
+        const pulseTime = now + i * 0.07;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(480 + (i % 2) * 60, pulseTime);
+
+        gain.gain.setValueAtTime(0.06, pulseTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, pulseTime + 0.04);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(pulseTime);
+        osc.stop(pulseTime + 0.04);
+      }
+
+      // Final paper tear noise
+      const tearTime = now + 0.32;
+      const oscTear = ctx.createOscillator();
+      const gainTear = ctx.createGain();
+      oscTear.type = 'sawtooth';
+      oscTear.frequency.setValueAtTime(2200, tearTime);
+      oscTear.frequency.exponentialRampToValueAtTime(600, tearTime + 0.06);
+
+      gainTear.gain.setValueAtTime(0.07, tearTime);
+      gainTear.gain.exponentialRampToValueAtTime(0.001, tearTime + 0.06);
+
+      oscTear.connect(gainTear);
+      gainTear.connect(ctx.destination);
+
+      oscTear.start(tearTime);
+      oscTear.stop(tearTime + 0.06);
+    } catch {
+      // Ignore
+    }
+  }
+
   // Bell ding when an order or course is FIRED to kitchen
   playKitchenFire() {
+    if (this.isMuted) return;
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -54,6 +137,7 @@ class SoundEngine {
 
   // Affirmative bump click for kitchen line cooks
   playItemBump() {
+    if (this.isMuted) return;
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -81,6 +165,7 @@ class SoundEngine {
 
   // Urgent two-tone for 20m+ overdue tickets
   playRushAlert() {
+    if (this.isMuted) return;
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -110,6 +195,7 @@ class SoundEngine {
 
   // Soft cash register / payment settled chime
   playPaymentSettled() {
+    if (this.isMuted) return;
     const ctx = this.getContext();
     if (!ctx) return;
 

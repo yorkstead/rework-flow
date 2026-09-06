@@ -28,7 +28,10 @@ export const KitchenKDS: React.FC = () => {
     setActiveStation, 
     updateItemStatus, 
     bumpCourse, 
-    fireCourse 
+    fireCourse,
+    eightySixList,
+    toggle86,
+    menu
   } = useUnionStore();
 
   const [currentTime, setCurrentTime] = useState<number>(Date.now());
@@ -122,6 +125,66 @@ export const KitchenKDS: React.FC = () => {
           >
             <Volume2 className="w-4 h-4" />
           </button>
+        </div>
+      </div>
+
+      {/* Live Chef 86-Board & Depleted Inventory Banner */}
+      <div className="p-3 bg-[#16181d] rounded-xl border border-[#262a34] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+          <span className="text-xs font-mono font-black uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Chef 86-Board (Live Auto-Cascade):
+          </span>
+        </div>
+
+        <div className="flex-1 flex items-center gap-1.5 overflow-x-auto scrollbar-none max-w-full">
+          {eightySixList.length > 0 ? (
+            eightySixList.map(itemId => {
+              const item = menu.find(m => m.id === itemId);
+              const itemName = item ? item.name : itemId;
+              return (
+                <span
+                  key={itemId}
+                  className="px-2.5 py-1 rounded-md bg-rose-950/60 border border-rose-600/70 text-rose-200 text-xs font-mono font-bold flex items-center gap-1.5 shrink-0 animate-pulse"
+                >
+                  <span>86: {itemName}</span>
+                  <button
+                    onClick={() => toggle86(itemId)}
+                    title="Restock this item"
+                    className="hover:text-white text-rose-400 ml-1 text-xs font-black"
+                  >
+                    ✕
+                  </button>
+                </span>
+              );
+            })
+          ) : (
+            <span className="text-xs text-emerald-400 font-medium italic">
+              All items in stock across line stations • No 86 restrictions active
+            </span>
+          )}
+        </div>
+
+        {/* Quick 86 Toggle for Low Stock Specials */}
+        <div className="flex items-center gap-1 shrink-0">
+          <select
+            onChange={(e) => {
+              if (e.target.value) {
+                toggle86(e.target.value);
+                e.target.value = '';
+              }
+            }}
+            defaultValue=""
+            className="bg-[#111215] text-[#9ca3af] hover:text-[#e2e4ea] border border-[#262a34] text-[11px] rounded-lg px-2 py-1 focus:outline-none"
+          >
+            <option value="" disabled>+ Quick 86 Line Item</option>
+            {menu
+              .filter(m => !eightySixList.includes(m.id))
+              .map(m => (
+                <option key={m.id} value={m.id}>86 {m.name}</option>
+              ))}
+          </select>
         </div>
       </div>
 

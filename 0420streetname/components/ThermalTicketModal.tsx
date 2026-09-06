@@ -3,6 +3,7 @@
 import React from 'react';
 import { Order, Table } from '../lib/types';
 import { Printer, X, Clock, Flame, Sparkles } from 'lucide-react';
+import { sound } from '../lib/audio';
 
 interface ThermalTicketModalProps {
   order: Order | null;
@@ -17,6 +18,12 @@ export const ThermalTicketModal: React.FC<ThermalTicketModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  React.useEffect(() => {
+    if (isOpen) {
+      sound.playThermalPrint();
+    }
+  }, [isOpen]);
+
   if (!isOpen || !order) return null;
 
   const dateStr = new Date(order.createdAt).toLocaleDateString('en-US', {
@@ -31,6 +38,7 @@ export const ThermalTicketModal: React.FC<ThermalTicketModalProps> = ({
   });
 
   const handlePrint = () => {
+    sound.playThermalPrint();
     window.print();
   };
 

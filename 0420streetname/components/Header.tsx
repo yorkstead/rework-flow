@@ -15,9 +15,14 @@ import {
   UserCheck, 
   Sparkles,
   ChevronDown,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Scale,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { ZReportModal } from './ZReportModal';
+import { ToastComparisonModal } from './ToastComparisonModal';
+import { sound } from '../lib/audio';
 
 export type ActiveTab = 'floor' | 'pos' | 'split' | 'kds' | 'events';
 
@@ -40,6 +45,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const [timeStr, setTimeStr] = useState<string>('');
   const [serverDropdownOpen, setServerDropdownOpen] = useState(false);
   const [zReportModalOpen, setZReportModalOpen] = useState(false);
+  const [toastComparisonOpen, setToastComparisonOpen] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(sound.isMuted);
 
   useEffect(() => {
     const updateTime = () => {
@@ -130,12 +137,38 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
           </div>
 
           <button
+            onClick={() => setToastComparisonOpen(true)}
+            title="Toast POS vs. UnionOS Total Cost of Ownership Audit"
+            className="flex items-center gap-1.5 px-2.5 py-0.5 text-amber-300 hover:text-white bg-gradient-to-r from-amber-950/40 to-[#1a1d24] hover:bg-amber-900/50 rounded border border-amber-500/50 transition font-mono font-bold text-[11px] shadow-sm"
+          >
+            <Scale className="w-3.5 h-3.5 text-[#c29b68]" />
+            <span className="hidden sm:inline">Toast vs. UnionOS</span>
+            <span className="sm:hidden">TCO</span>
+          </button>
+
+          <button
             onClick={() => setZReportModalOpen(true)}
             title="Manager End-of-Day Shift Closeout & Z-Report"
             className="flex items-center gap-1 px-2 py-0.5 text-[#c29b68] hover:text-white bg-[#1a1d24] hover:bg-[#222731] rounded border border-[#c29b68]/40 transition font-mono font-semibold"
           >
             <FileSpreadsheet className="w-3 h-3 text-[#c29b68]" />
             <span>Z-Report</span>
+          </button>
+
+          <button
+            onClick={() => {
+              const muted = sound.toggleMute();
+              setIsAudioMuted(muted);
+              if (!muted) sound.playTap();
+            }}
+            title={isAudioMuted ? 'Unmute Tactile Sound Effects' : 'Mute Tactile Sound Effects'}
+            className="p-1 rounded bg-[#1a1d24] hover:bg-[#222731] text-[#9ca3af] hover:text-[#e2e4ea] border border-[#262a34] transition"
+          >
+            {isAudioMuted ? (
+              <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+            ) : (
+              <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+            )}
           </button>
 
           <button
@@ -152,6 +185,12 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
           </button>
         </div>
       </div>
+
+      {/* Toast vs. UnionOS TCO Comparison Modal */}
+      <ToastComparisonModal
+        isOpen={toastComparisonOpen}
+        onClose={() => setToastComparisonOpen(false)}
+      />
 
       {/* Z-Report Closeout Modal */}
       <ZReportModal

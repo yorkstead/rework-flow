@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { VIPGuestCard } from './VIPGuestCard';
 import { ThermalTicketModal } from './ThermalTicketModal';
+import { sound } from '../lib/audio';
 
 interface TerminalPOSProps {
   onOpenSplit: (tableId: string) => void;
@@ -52,6 +53,7 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
   const [activeItemForMods, setActiveItemForMods] = useState<string | null>(null);
   const [showVIPModal, setShowVIPModal] = useState<boolean>(false);
   const [showThermalTicket, setShowThermalTicket] = useState<boolean>(false);
+  const [mobileHandheldView, setMobileHandheldView] = useState<'menu' | 'ticket'>('menu');
 
   const categories: { id: MenuCategory | 'all'; label: string }[] = [
     { id: 'all', label: 'All Items' },
@@ -113,6 +115,7 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
       return;
     }
 
+    sound.playTap();
     const course = selectedCourseOverride || item.courseDefault;
     addItemToOrder(activeTableId, menuItemId, selectedSeat, course, pendingMods);
 
@@ -127,6 +130,7 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
   };
 
   const toggleMod = (mod: string) => {
+    sound.playTap();
     if (pendingMods.includes(mod)) {
       setPendingMods(pendingMods.filter(m => m !== mod));
     } else {
@@ -135,11 +139,44 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
   };
 
   return (
-    <div className="p-2 sm:p-3 max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0 lg:h-[calc(100vh-100px)] max-w-full overflow-hidden">
-      {/* LEFT COLUMN: ACTIVE TABLE TICKET & COURSING PASS (5 Cols) */}
-      <div className="lg:col-span-5 flex flex-col bg-[#16181d] rounded-xl border border-[#262a34] shadow-xl overflow-hidden max-w-full">
-        {/* Table Selector & Top Info */}
-        <div className="p-3 bg-[#1a1d24] border-b border-[#262a34] flex items-center justify-between">
+    <div className="p-2 sm:p-3 max-w-[1600px] mx-auto flex flex-col gap-3 min-h-0 lg:h-[calc(100vh-100px)] max-w-full overflow-hidden">
+      {/* Mobile Handheld Segmented Bar (Only visible on small viewports) */}
+      <div className="lg:hidden flex items-center bg-[#111215] p-1 rounded-xl border border-[#262a34]">
+        <button
+          onClick={() => setMobileHandheldView('menu')}
+          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            mobileHandheldView === 'menu'
+              ? 'bg-[#c29b68] text-[#0c0d10] shadow-sm'
+              : 'text-[#9ca3af] hover:text-[#e2e4ea]'
+          }`}
+        >
+          <span>1. Speed Menu Tap</span>
+        </button>
+        <button
+          onClick={() => setMobileHandheldView('ticket')}
+          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 relative ${
+            mobileHandheldView === 'ticket'
+              ? 'bg-[#c29b68] text-[#0c0d10] shadow-sm'
+              : 'text-[#9ca3af] hover:text-[#e2e4ea]'
+          }`}
+        >
+          <Receipt className="w-3.5 h-3.5" />
+          <span>2. Table Ticket</span>
+          {activeOrder && activeOrder.items.length > 0 && (
+            <span className="font-mono text-[10px] bg-black text-[#c29b68] px-1.5 py-0.2 rounded-full font-black">
+              {activeOrder.items.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0 max-w-full overflow-hidden">
+        {/* LEFT COLUMN: ACTIVE TABLE TICKET & COURSING PASS (5 Cols) */}
+        <div className={`lg:col-span-5 flex flex-col bg-[#16181d] rounded-xl border border-[#262a34] shadow-xl overflow-hidden max-w-full ${
+          mobileHandheldView === 'ticket' ? 'flex' : 'hidden lg:flex'
+        }`}>
+          {/* Table Selector & Top Info */}
+          <div className="p-3 bg-[#1a1d24] border-b border-[#262a34] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <select
               value={activeTableId || ''}
@@ -426,7 +463,9 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
       </div>
 
       {/* RIGHT COLUMN: 240 UNION MENU & SPEED-RING CATALOG (7 Cols) */}
-      <div className="lg:col-span-7 flex flex-col bg-[#16181d] rounded-xl border border-[#262a34] shadow-xl overflow-hidden max-w-full">
+      <div className={`lg:col-span-7 flex flex-col bg-[#16181d] rounded-xl border border-[#262a34] shadow-xl overflow-hidden max-w-full ${
+        mobileHandheldView === 'menu' ? 'flex' : 'hidden lg:flex'
+      }`}>
         {/* Category Tabs & Search */}
         <div className="p-3 bg-[#1a1d24] border-b border-[#262a34] space-y-2 max-w-full overflow-hidden">
           <div className="flex items-center justify-between gap-2 max-w-full overflow-hidden">
@@ -551,6 +590,7 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
             );
           })}
         </div>
+      </div>
       </div>
 
       {/* Lakewood VIP Regular Profile Modal */}
