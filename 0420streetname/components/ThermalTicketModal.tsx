@@ -158,10 +158,20 @@ export const ThermalTicketModal: React.FC<ThermalTicketModalProps> = ({
 
                   <div className="space-y-2.5 pl-1">
                     {courseItems.map((item, idx) => (
-                      <div key={item.id || idx} className="text-xs">
+                      <div key={item.id || idx} className={`text-xs ${item.isVoided ? 'opacity-40 line-through' : ''}`}>
                         <div className="flex items-baseline justify-between font-black text-neutral-900">
                           <span className="text-sm">
                             1x {item.name.toUpperCase()}
+                            {item.isComped && (
+                              <span className="ml-2 text-[10px] bg-neutral-800 text-white px-1 py-0.2 uppercase font-mono">
+                                [COMP: {item.compReason?.split(' ')[0] || 'VIP'}]
+                              </span>
+                            )}
+                            {item.isVoided && (
+                              <span className="ml-2 text-[10px] bg-rose-700 text-white px-1 py-0.2 uppercase font-mono">
+                                [VOID: {item.voidReason || 'ERROR'}]
+                              </span>
+                            )}
                           </span>
                           <span className="text-[10px] text-neutral-600 uppercase font-sans">
                             {item.station.toUpperCase()} • S{item.seatNumber === 'shared' ? 'SHR' : item.seatNumber}

@@ -211,8 +211,19 @@ export const SplitCheckView: React.FC<SplitCheckViewProps> = ({ onBackToFloor, o
                 <div className="py-3 space-y-1.5 text-xs">
                   {seatItems.map(item => (
                     <div key={item.id} className="flex justify-between items-start text-[#9ca3af]">
-                      <span className="line-clamp-1 flex-1 pr-2">{item.name}</span>
-                      <span className="font-mono text-[#e2e4ea] font-medium">${item.price.toFixed(2)}</span>
+                      <div className="flex-1 pr-2">
+                        <span className={`line-clamp-1 ${item.isVoided ? 'line-through text-rose-400/60' : ''}`}>
+                          {item.name}
+                        </span>
+                        {item.isComped && (
+                          <span className="text-[9px] font-mono text-emerald-400 block font-bold">
+                            COMP ({item.compReason?.split(' ')[0] || 'VIP'})
+                          </span>
+                        )}
+                      </div>
+                      <span className={`font-mono font-medium ${item.isComped ? 'text-emerald-400 line-through' : 'text-[#e2e4ea]'}`}>
+                        {item.isComped ? '$0.00' : `$${item.price.toFixed(2)}`}
+                      </span>
                     </div>
                   ))}
 
@@ -220,6 +231,13 @@ export const SplitCheckView: React.FC<SplitCheckViewProps> = ({ onBackToFloor, o
                     <div className="flex justify-between items-center text-[#c29b68] text-[11px] font-mono pt-1 border-t border-dashed border-[#262a34]">
                       <span>Shared Apps ({checks.length} ways)</span>
                       <span>+${sharedShare.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {activeOrder.checkDiscountPercent && activeOrder.checkDiscountPercent > 0 && (
+                    <div className="flex justify-between items-center text-emerald-400 text-[11px] font-mono pt-1 border-t border-dashed border-[#262a34]">
+                      <span>Check Comp ({activeOrder.checkDiscountPercent}%)</span>
+                      <span>Applied</span>
                     </div>
                   )}
                 </div>

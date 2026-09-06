@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { VIPGuestCard } from './VIPGuestCard';
 import { ThermalTicketModal } from './ThermalTicketModal';
+import { ManagerCompVoidModal } from './ManagerCompVoidModal';
+import { OrderItem } from '../lib/types';
 import { sound } from '../lib/audio';
 
 interface TerminalPOSProps {
@@ -39,6 +41,9 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
     activeOrder, 
     addItemToOrder, 
     removeItemFromOrder, 
+    compItem,
+    voidItem,
+    compCheck,
     fireCourse, 
     sendOrder,
     eightySixList,
@@ -54,6 +59,11 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
   const [showVIPModal, setShowVIPModal] = useState<boolean>(false);
   const [showThermalTicket, setShowThermalTicket] = useState<boolean>(false);
   const [mobileHandheldView, setMobileHandheldView] = useState<'menu' | 'ticket'>('menu');
+
+  // Comp & Void Modal State
+  const [compVoidModalOpen, setCompVoidModalOpen] = useState<boolean>(false);
+  const [compVoidMode, setCompVoidMode] = useState<'item' | 'check'>('item');
+  const [targetCompVoidItem, setTargetCompVoidItem] = useState<OrderItem | null>(null);
 
   const categories: { id: MenuCategory | 'all'; label: string }[] = [
     { id: 'all', label: 'All Items' },
@@ -95,14 +105,22 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
     return groups;
   }, [activeOrder]);
 
-  const subtotal = activeOrder
-    ? activeOrder.items.reduce((acc, i) => acc + i.price, 0)
+  const rawSubtotal = activeOrder
+    ? activeOrder.items
+        .filter(i => !i.isVoided)
+        .reduce((acc, i) => acc + (i.isComped ? 0 : i.price), 0)
     : 0;
+  
+  const discountAmount = activeOrder && activeOrder.checkDiscountPercent 
+    ? Math.round(rawSubtotal * (activeOrder.checkDiscountPercent / 100) * 100) / 100 
+    : 0;
+
+  const subtotal = Math.max(0, rawSubtotal - discountAmount);
   const tax = Math.round(subtotal * 0.0825 * 100) / 100;
   const autoGrat = activeOrder && activeOrder.guestCount >= 6 ? Math.round(subtotal * 0.20 * 100) / 100 : 0;
   const total = Math.round((subtotal + tax + autoGrat) * 100) / 100;
 
-  const draftCount = activeOrder ? activeOrder.items.filter(i => i.status === 'draft').length : 0;
+  const draftCount = activeOrder ? activeOrder.items.filter(i => i.status === 'draft' && !i.isVoided).length : 0;
 
   const handleAddItem = (menuItemId: string) => {
     if (!activeTableId) return;
@@ -320,7 +338,11 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
                       <div
                         key={item.id}
                         className={`p-2 rounded-lg border text-xs flex items-center justify-between transition ${
-                          item.status === 'draft'
+                          item.isVoided
+                            ? 'bg-rose-950/10 border-rose-900/40 opacity-60 line-through'
+                            : item.isComped
+                            ? 'bg-emerald-950/20 border-emerald-500/40'
+                            : item.status === 'draft'
                             ? 'bg-amber-950/20 border-amber-500/40'
                             : item.status === 'plated'
                             ? 'bg-emerald-950/20 border-emerald-500/40'
@@ -329,12 +351,27 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
                             : 'bg-[#111215] border-[#262a34]'
                         }`}
                       >
-                        <div className="flex items-start gap-2 flex-1">
+                        <div className="flex items-start gap-2 flex-1 min-w-0">
                           <span className="font-mono text-[10px] bg-[#111215] text-[#c29b68] px-1.5 py-0.5 rounded border border-[#262a34] shrink-0 font-bold">
                             {item.seatNumber === 'shared' ? 'ALL' : `S${item.seatNumber}`}
                           </span>
-                          <div>
-                            <div className="font-semibold text-[#e2e4ea]">{item.name}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`font-semibold ${item.isVoided ? 'line-through text-[#9ca3af]' : 'text-[#e2e4ea]'}`}>
+                                {item.name}
+                              </span>
+                              {item.isComped && (
+                                <span className="text-[9px] font-mono uppercase bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded border border-emerald-500/40 font-black">
+                                  COMP: {item.compReason?.split(' ')[0] || 'VIP'}
+                                </span>
+                              )}
+                              {item.isVoided && (
+                                <span className="text-[9px] font-mono uppercase bg-rose-500/20 text-rose-300 px-1 py-0.2 rounded border border-rose-500/40 font-black">
+                                  VOID: {item.voidReason || 'Error'}
+                                </span>
+                              )}
+                            </div>
+
                             {item.mods && item.mods.length > 0 && (
                               <div className="text-[10px] text-amber-300 font-mono mt-0.5 flex flex-wrap gap-1">
                                 {item.mods.map((m, idx) => (
@@ -347,21 +384,40 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-[#e2e4ea]">
-                            ${item.price}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className={`font-mono font-bold ${
+                            item.isComped 
+                              ? 'text-emerald-400 line-through text-[11px]' 
+                              : item.isVoided 
+                              ? 'text-rose-400 line-through text-[11px]' 
+                              : 'text-[#e2e4ea]'
+                          }`}>
+                            {item.isComped ? `$0.00` : `$${item.price.toFixed(2)}`}
                           </span>
-                          {item.status === 'draft' ? (
+
+                          {/* Comp / Void Trigger for items */}
+                          {!item.isVoided && !item.isComped && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTargetCompVoidItem(item);
+                                setCompVoidMode('item');
+                                setCompVoidModalOpen(true);
+                              }}
+                              className="px-1.5 py-0.5 text-[9px] font-mono uppercase text-[#9ca3af] hover:text-amber-300 bg-[#16181d] hover:bg-[#20242e] border border-[#262a34] rounded transition"
+                              title="Authorize Item Comp or Void (Manager PIN)"
+                            >
+                              Comp/Void
+                            </button>
+                          )}
+
+                          {item.status === 'draft' && !item.isVoided && (
                             <button
                               onClick={() => removeItemFromOrder(activeTableId!, item.id)}
                               className="text-[#9ca3af] hover:text-rose-400 p-1 transition"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
-                          ) : (
-                            <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded text-[#9ca3af] bg-[#111215] border border-[#262a34]">
-                              {item.status}
-                            </span>
                           )}
                         </div>
                       </div>
@@ -419,8 +475,16 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
           <div className="space-y-1 text-xs font-mono">
             <div className="flex justify-between text-[#9ca3af]">
               <span>Subtotal:</span>
-              <span className="text-[#e2e4ea]">${subtotal.toFixed(2)}</span>
+              <span className="text-[#e2e4ea]">${rawSubtotal.toFixed(2)}</span>
             </div>
+
+            {discountAmount > 0 && activeOrder && (
+              <div className="flex justify-between text-emerald-400">
+                <span>Check Comp ({activeOrder.checkDiscountPercent}% • {activeOrder.checkDiscountReason?.split(' ')[0] || 'VIP'}):</span>
+                <span>-${discountAmount.toFixed(2)}</span>
+              </div>
+            )}
+
             <div className="flex justify-between text-[#9ca3af]">
               <span>Lakewood Tax (8.25%):</span>
               <span className="text-[#e2e4ea]">${tax.toFixed(2)}</span>
@@ -437,26 +501,40 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="grid grid-cols-3 gap-1.5 pt-1">
             <button
               disabled={draftCount === 0}
               onClick={() => activeTableId && sendOrder(activeTableId)}
-              className={`py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition ${
+              className={`py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 transition ${
                 draftCount > 0
                   ? 'bg-emerald-600 hover:bg-emerald-500 text-[#0c0d10] shadow-md'
                   : 'bg-[#1a1d24] text-[#9ca3af]/40 border border-[#262a34] cursor-not-allowed'
               }`}
             >
               <Send className="w-3.5 h-3.5" />
-              <span>Send New ({draftCount})</span>
+              <span>Send ({draftCount})</span>
+            </button>
+
+            <button
+              disabled={!activeOrder || rawSubtotal === 0}
+              onClick={() => {
+                setCompVoidMode('check');
+                setTargetCompVoidItem(null);
+                setCompVoidModalOpen(true);
+              }}
+              className="py-2 bg-[#1a1d24] hover:bg-[#252a35] text-amber-300 hover:text-amber-200 border border-amber-500/40 font-bold text-xs rounded-lg flex items-center justify-center gap-1 transition shadow-sm"
+              title="Apply Table Comp / VIP Discount (Manager PIN)"
+            >
+              <Award className="w-3.5 h-3.5 text-amber-400" />
+              <span>Comp Check</span>
             </button>
 
             <button
               onClick={() => activeTableId && onOpenSplit(activeTableId)}
-              className="py-2 bg-[#3b82f6] hover:bg-blue-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow-md transition"
+              className="py-2 bg-[#3b82f6] hover:bg-blue-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 shadow-md transition"
             >
               <Receipt className="w-3.5 h-3.5" />
-              <span>Split Check & Pay</span>
+              <span>Split & Pay</span>
             </button>
           </div>
         </div>
@@ -615,6 +693,35 @@ export const TerminalPOS: React.FC<TerminalPOSProps> = ({ onOpenSplit }) => {
           table={activeTable}
           isOpen={showThermalTicket}
           onClose={() => setShowThermalTicket(false)}
+        />
+      )}
+
+      {/* Manager Comp & Void Authorization Modal */}
+      {compVoidModalOpen && activeTable && (
+        <ManagerCompVoidModal
+          isOpen={compVoidModalOpen}
+          onClose={() => {
+            setCompVoidModalOpen(false);
+            setTargetCompVoidItem(null);
+          }}
+          mode={compVoidMode}
+          targetItem={targetCompVoidItem}
+          tableNumber={activeTable.number}
+          onConfirmCompItem={(itemId, reason, manager) => {
+            if (activeTableId) {
+              compItem(activeTableId, itemId, reason, manager);
+            }
+          }}
+          onConfirmVoidItem={(itemId, reason, manager) => {
+            if (activeTableId) {
+              voidItem(activeTableId, itemId, reason, manager);
+            }
+          }}
+          onConfirmCompCheck={(percent, reason, manager) => {
+            if (activeTableId) {
+              compCheck(activeTableId, percent, reason, manager);
+            }
+          }}
         />
       )}
     </div>

@@ -32,6 +32,9 @@ interface UnionStoreContextType {
   autoSplitBySeat: (tableId: string) => void;
   settleCheck: (tableId: string, checkId: string, method: SplitCheck['paymentMethod']) => void;
   closeTable: (tableId: string) => void;
+  compItem: (tableId: string, orderItemId: string, reason: string, authorizedBy: string) => void;
+  voidItem: (tableId: string, orderItemId: string, reason: string, authorizedBy: string) => void;
+  compCheck: (tableId: string, discountPercent: number, reason: string, authorizedBy: string) => void;
   toggle86: (menuItemId: string) => void;
   decrementCellar: (menuItemId: string) => void;
   resetDemo: () => void;
@@ -514,13 +517,17 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
     }
 
-    const sharedItems = order.items.filter(i => i.seatNumber === 'shared');
-    const sharedTotal = sharedItems.reduce((sum, item) => sum + item.price, 0);
+    const nonVoidItems = order.items.filter(i => !i.isVoided);
+    const sharedItems = nonVoidItems.filter(i => i.seatNumber === 'shared');
+    const sharedTotal = sharedItems.reduce((sum, item) => sum + (item.isComped ? 0 : item.price), 0);
     const sharedPerSeat = activeSeats.length > 0 ? sharedTotal / activeSeats.length : 0;
 
+    const discountMultiplier = order.checkDiscountPercent ? (1 - order.checkDiscountPercent / 100) : 1;
+
     const splitChecks: SplitCheck[] = activeSeats.map((seatNum, idx) => {
-      const seatItems = order.items.filter(i => i.seatNumber === seatNum);
-      const seatSubtotal = seatItems.reduce((sum, item) => sum + item.price, 0) + sharedPerSeat;
+      const seatItems = nonVoidItems.filter(i => i.seatNumber === seatNum);
+      const rawSeatSubtotal = seatItems.reduce((sum, item) => sum + (item.isComped ? 0 : item.price), 0) + sharedPerSeat;
+      const seatSubtotal = rawSeatSubtotal * discountMultiplier;
       const tax = Math.round(seatSubtotal * 0.0825 * 100) / 100;
       const autoGrat = order.guestCount >= 6 ? Math.round(seatSubtotal * 0.20 * 100) / 100 : 0;
       const total = Math.round((seatSubtotal + tax + autoGrat) * 100) / 100;
@@ -631,7 +638,124 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     syncState(nextTables, nextOrders, menu, events, eightySixList, nextLogs);
   }, [tables, orders, currentServer, menu, events, eightySixList, recordAudit, syncState]);
 
-  // 11. Toggle 86 Status
+  // 11. Comp an item (Hospitality / VIP / Courtesy)
+  const compItem = useCallback((tableId: string, orderItemId: string, reason: string, authorizedBy: string) => {
+    sound.playTap();
+    let compedItemName = 'Item';
+    let compedAmount = 0;
+    const targetTable = tables.find(t => t.id === tableId);
+
+    const nextOrders = orders.map(ord => {
+      if (ord.tableId === tableId && ord.status === 'open') {
+        const nextItems = ord.items.map(item => {
+          if (item.id === orderItemId) {
+            compedItemName = item.name;
+            compedAmount = item.price;
+            return {
+              ...item,
+              isComped: true,
+              compReason: reason,
+              compAuthorizedBy: authorizedBy,
+            };
+          }
+          return item;
+        });
+        return { ...ord, items: nextItems };
+      }
+      return ord;
+    });
+
+    const nextLogs = recordAudit(
+      'COMP_ITEM', 
+      targetTable?.number, 
+      authorizedBy || currentServer, 
+      `Comped ${compedItemName} ($${compedAmount.toFixed(2)}) • Reason: ${reason}`, 
+      -compedAmount, 
+      { orderItemId, reason, authorizedBy }
+    );
+
+    setOrders(nextOrders);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [orders, tables, currentServer, menu, events, eightySixList, recordAudit, syncState]);
+
+  // 12. Void an item (Mistake / Spoilage / Never Cooked)
+  const voidItem = useCallback((tableId: string, orderItemId: string, reason: string, authorizedBy: string) => {
+    sound.playTap();
+    let voidedItemName = 'Item';
+    let voidedAmount = 0;
+    const targetTable = tables.find(t => t.id === tableId);
+
+    const nextOrders = orders.map(ord => {
+      if (ord.tableId === tableId && ord.status === 'open') {
+        const nextItems = ord.items.map(item => {
+          if (item.id === orderItemId) {
+            voidedItemName = item.name;
+            voidedAmount = item.price;
+            return {
+              ...item,
+              isVoided: true,
+              voidReason: reason,
+              voidAuthorizedBy: authorizedBy,
+              status: 'bumped' as const, // remove from active kitchen line
+            };
+          }
+          return item;
+        });
+        return { ...ord, items: nextItems };
+      }
+      return ord;
+    });
+
+    const nextLogs = recordAudit(
+      'VOID_ITEM', 
+      targetTable?.number, 
+      authorizedBy || currentServer, 
+      `Voided ${voidedItemName} ($${voidedAmount.toFixed(2)}) • Reason: ${reason}`, 
+      -voidedAmount, 
+      { orderItemId, reason, authorizedBy }
+    );
+
+    setOrders(nextOrders);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [orders, tables, currentServer, menu, events, eightySixList, recordAudit, syncState]);
+
+  // 13. Comp / Discount Entire Check Percentage
+  const compCheck = useCallback((tableId: string, discountPercent: number, reason: string, authorizedBy: string) => {
+    sound.playTap();
+    const targetTable = tables.find(t => t.id === tableId);
+    let totalDiscountUSD = 0;
+
+    const nextOrders = orders.map(ord => {
+      if (ord.tableId === tableId && ord.status === 'open') {
+        const activeSubtotal = ord.items
+          .filter(i => !i.isVoided && !i.isComped)
+          .reduce((sum, i) => sum + i.price, 0);
+        totalDiscountUSD = Math.round(activeSubtotal * (discountPercent / 100) * 100) / 100;
+
+        return {
+          ...ord,
+          checkDiscountPercent: discountPercent,
+          checkDiscountReason: reason,
+          checkDiscountAuthorizedBy: authorizedBy,
+        };
+      }
+      return ord;
+    });
+
+    const nextLogs = recordAudit(
+      'COMP_CHECK', 
+      targetTable?.number, 
+      authorizedBy || currentServer, 
+      `Applied ${discountPercent}% Check Comp (-$${totalDiscountUSD.toFixed(2)}) • Reason: ${reason}`, 
+      -totalDiscountUSD, 
+      { discountPercent, reason, authorizedBy }
+    );
+
+    setOrders(nextOrders);
+    syncState(tables, nextOrders, menu, events, eightySixList, nextLogs);
+  }, [orders, tables, currentServer, menu, events, eightySixList, recordAudit, syncState]);
+
+  // 14. Toggle 86 Status
   const toggle86 = useCallback((menuItemId: string) => {
     const item = menu.find(m => m.id === menuItemId);
     const itemName = item ? item.name : menuItemId;
@@ -733,6 +857,9 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         autoSplitBySeat,
         settleCheck,
         closeTable,
+        compItem,
+        voidItem,
+        compCheck,
         toggle86,
         decrementCellar,
         resetDemo,

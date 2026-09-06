@@ -81,6 +81,12 @@ export interface OrderItem {
   sentAt?: number;
   firedAt?: number;
   platedAt?: number;
+  isComped?: boolean;
+  compReason?: string;
+  compAuthorizedBy?: string;
+  isVoided?: boolean;
+  voidReason?: string;
+  voidAuthorizedBy?: string;
 }
 
 export interface SplitCheck {
@@ -108,6 +114,9 @@ export interface Order {
   status: 'open' | 'closed';
   notes?: string;
   splitChecks?: SplitCheck[];
+  checkDiscountPercent?: number; // e.g. 10%, 20%, 50%
+  checkDiscountReason?: string;
+  checkDiscountAuthorizedBy?: string;
 }
 
 export interface EventRoom {
@@ -127,7 +136,7 @@ export interface EventRoom {
 export interface AuditLog {
   id: string;
   timestamp: number;
-  action: 'SEAT' | 'ORDER_ITEM' | 'REMOVE_ITEM' | 'FIRE_COURSE' | 'SEND_ORDER' | 'BUMP_COURSE' | 'SPLIT_CHECK' | 'SETTLE_CHECK' | 'CLOSE_TABLE' | 'TOGGLE_86' | 'CELLAR_DECREMENT' | 'SYSTEM_RECONCILE';
+  action: 'SEAT' | 'ORDER_ITEM' | 'REMOVE_ITEM' | 'FIRE_COURSE' | 'SEND_ORDER' | 'BUMP_COURSE' | 'SPLIT_CHECK' | 'SETTLE_CHECK' | 'CLOSE_TABLE' | 'TOGGLE_86' | 'CELLAR_DECREMENT' | 'SYSTEM_RECONCILE' | 'VOID_ITEM' | 'COMP_ITEM' | 'COMP_CHECK';
   tableNumber?: string;
   serverName: string;
   description: string;
