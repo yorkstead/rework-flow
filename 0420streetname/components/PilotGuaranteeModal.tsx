@@ -17,7 +17,8 @@ import {
   HelpCircle,
   HardDrive,
   Printer,
-  FileText
+  FileText,
+  Download
 } from 'lucide-react';
 import Link from 'next/link';
 import { useUnionStore } from '../lib/store/useUnionStore';
@@ -31,6 +32,7 @@ export const PilotGuaranteeModal: React.FC<PilotGuaranteeModalProps> = ({ isOpen
   const { auditLogs } = useUnionStore();
   const [selectedDuration, setSelectedDuration] = useState<'7' | '14'>('14');
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [exported, setExported] = useState(false);
 
   if (!isOpen) return null;
 
@@ -38,6 +40,53 @@ export const PilotGuaranteeModal: React.FC<PilotGuaranteeModalProps> = ({ isOpen
     navigator.clipboard.writeText(hash);
     setCopiedHash(hash);
     setTimeout(() => setCopiedHash(null), 1800);
+  };
+
+  const exportToastReconciliationCSV = () => {
+    const headers = [
+      'Timestamp_ISO',
+      'Transaction_ID',
+      'Action',
+      'Table_Number',
+      'Server_Name',
+      'Description',
+      'Amount_USD',
+      'Tax_Lakewood_8.25pct',
+      'AutoGrat_20pct',
+      'Cryptographic_Hash_SHA256'
+    ];
+
+    const rows = auditLogs.map(log => {
+      const dateStr = new Date(log.timestamp).toISOString();
+      const amount = log.amount || 0;
+      const tax = log.action === 'SETTLE_CHECK' ? (amount * 0.0825).toFixed(2) : '0.00';
+      const autoGrat = log.action === 'SETTLE_CHECK' ? (amount * 0.20).toFixed(2) : '0.00';
+      const cleanDesc = `"${log.description.replace(/"/g, '""')}"`;
+      return [
+        dateStr,
+        log.id,
+        log.action,
+        log.tableNumber || 'N/A',
+        `"${log.serverName}"`,
+        cleanDesc,
+        amount.toFixed(2),
+        tax,
+        autoGrat,
+        log.hash
+      ].join(',');
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `240_Union_Shift_Reconciliation_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setExported(true);
+    setTimeout(() => setExported(false), 2500);
   };
 
   return (
@@ -145,16 +194,26 @@ export const PilotGuaranteeModal: React.FC<PilotGuaranteeModalProps> = ({ isOpen
 
           {/* Live Immutable Audit Trail Viewer */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Terminal className="w-4 h-4 text-[#c29b68]" />
                 <h4 className="text-sm font-bold text-[#e2e4ea] font-mono uppercase tracking-wider">
                   Live Shift Cryptographic Audit Log (Tamper-Proof)
                 </h4>
               </div>
-              <span className="text-[11px] font-mono text-[#9ca3af]">
-                {auditLogs.length} verified operations recorded
-              </span>
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <span className="text-[11px] font-mono text-[#9ca3af]">
+                  {auditLogs.length} verified operations
+                </span>
+                <button
+                  onClick={exportToastReconciliationCSV}
+                  className="px-2.5 py-1 bg-[#1a1d24] hover:bg-[#252b37] text-[#c29b68] border border-[#c29b68]/40 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition shadow-sm"
+                  title="Download full shift audit log for Toast & QuickBooks reconciliation"
+                >
+                  {exported ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Download className="w-3.5 h-3.5" />}
+                  <span>{exported ? 'Exported CSV!' : 'Export Toast/Excel CSV'}</span>
+                </button>
+              </div>
             </div>
 
             <div className="bg-[#111215] border border-[#262a34] rounded-xl overflow-hidden">

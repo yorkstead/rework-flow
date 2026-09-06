@@ -161,10 +161,10 @@ export const MarketingKitModal: React.FC<MarketingKitModalProps> = ({ isOpen, on
                     </p>
 
                     <div className="my-3 p-3 bg-white rounded-xl inline-block shadow-md border-2 border-[#c29b68]">
-                      {/* Live QR Code pointing to production app */}
+                      {/* Live QR Code pointing to table guest checkout view */}
                       <img 
-                        src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=4&data=https%3A%2F%2F240.yorkstead.com" 
-                        alt="240 Union QR Code" 
+                        src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=4&data=https%3A%2F%2F240.yorkstead.com%2Ftable%2F23" 
+                        alt="240 Union QR Code Table 23" 
                         className="w-36 h-36 mx-auto"
                       />
                     </div>
