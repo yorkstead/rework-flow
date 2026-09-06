@@ -11,7 +11,11 @@ import {
   Flame, 
   Zap,
   Clock,
-  ExternalLink
+  ExternalLink,
+  HardDrive,
+  Monitor,
+  Tablet,
+  ShoppingCart
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -135,7 +139,7 @@ export default function LeaveBehindPage() {
                 <span>60-ft Open Kitchen Pass</span>
               </div>
               <p className="text-[11px] text-gray-600 mt-1 leading-snug">
-                Expo coursing engine. Line cooks and wood oven see apps vs entrees fire simultaneously; single-tap bumper with synchronized expo audio chime.
+                Master Expo screen coursing engine. Line cooks and wood oven see apps vs entrees fire simultaneously; 1-tap bumper with synchronized audio chime.
               </p>
             </div>
 
@@ -151,12 +155,98 @@ export default function LeaveBehindPage() {
           </div>
         </div>
 
-        {/* Section 3: The Zero-Risk 14-Day Pilot Agreement */}
+        {/* Section 3: Hardware Bill of Materials (Client Buys Direct at 0% Markup) */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-black uppercase tracking-wider font-mono text-black flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4 text-emerald-700" />
+              3. Station Hardware Architecture (Client Buys Direct • 0% Markup)
+            </h2>
+            <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
+              Direct Title & Warranty to 240 Union
+            </span>
+          </div>
+
+          <div className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 text-xs">
+            <div className="grid grid-cols-4 p-2.5 bg-gray-100 font-mono font-bold text-gray-700 border-b border-gray-200 text-[10px] uppercase">
+              <div className="col-span-2">Station & Purpose</div>
+              <div>Hardware Specification</div>
+              <div className="text-right">Direct Cost</div>
+            </div>
+            
+            <div className="grid grid-cols-4 p-2 border-b border-gray-200 items-center">
+              <div className="col-span-2 font-medium text-black">
+                <strong>Local Server Appliance:</strong> Runs local SQLite/Postgres LAN engine in manager rack.
+              </div>
+              <div className="text-gray-600 font-mono text-[11px]">Intel N100 Mini-PC, 16GB, Dual LAN</div>
+              <div className="text-right font-mono font-bold text-black">$160</div>
+            </div>
+
+            <div className="grid grid-cols-4 p-2 border-b border-gray-200 items-center">
+              <div className="col-span-2 font-medium text-black">
+                <strong>Host Stand Station:</strong> Seating chart, waitlist SMS, VIP guest profiles.
+              </div>
+              <div className="text-gray-600 font-mono text-[11px]">10.9" Commercial Screen + Steel Swivel Stand</div>
+              <div className="text-right font-mono font-bold text-black">$280</div>
+            </div>
+
+            <div className="grid grid-cols-4 p-2 border-b border-gray-200 items-center">
+              <div className="col-span-2 font-medium text-black">
+                <strong>Main Bar (2 Stations):</strong> High-speed cocktail orders, bottle cellar tracking.
+              </div>
+              <div className="text-gray-600 font-mono text-[11px]">2x 15.6" Spill-Resistant Touch Terminals</div>
+              <div className="text-right font-mono font-bold text-black">$600</div>
+            </div>
+
+            <div className="grid grid-cols-4 p-2 border-b border-gray-200 items-center">
+              <div className="col-span-2 font-medium text-black">
+                <strong>Dining Room (2 Server Stations):</strong> Seat auto-splitting, coursing entry.
+              </div>
+              <div className="text-gray-600 font-mono text-[11px]">2x 15.6" Heavy-Duty Touch Terminals</div>
+              <div className="text-right font-mono font-bold text-black">$550</div>
+            </div>
+
+            <div className="grid grid-cols-4 p-2 border-b border-gray-200 items-center">
+              <div className="col-span-2 font-medium text-black">
+                <strong>Kitchen Expo Pass:</strong> Master chef bumper, coursing sync, elapsed timers.
+              </div>
+              <div className="text-gray-600 font-mono text-[11px]">21.5" Commercial Kitchen Display Screen</div>
+              <div className="text-right font-mono font-bold text-black">$260</div>
+            </div>
+
+            <div className="grid grid-cols-4 p-2 border-b border-gray-200 items-center">
+              <div className="col-span-2 font-medium text-black">
+                <strong>Mobile Handhelds (2 Units):</strong> Patio orders & fast Denver Fed lunch checkout.
+              </div>
+              <div className="text-gray-600 font-mono text-[11px]">2x Rugged Android Handheld Readers</div>
+              <div className="text-right font-mono font-bold text-black">$260</div>
+            </div>
+
+            <div className="grid grid-cols-4 p-2 bg-emerald-50/60 items-center">
+              <div className="col-span-2 font-medium text-emerald-900">
+                <strong>Line Printers & Cash Drawers:</strong> Grill, Sauté, Wood Oven & Bar.
+              </div>
+              <div className="text-emerald-800 font-mono text-[11px]">Existing Epson Impact Printers & APG Drawers</div>
+              <div className="text-right font-mono font-bold text-emerald-700">100% Reused ($0.00)</div>
+            </div>
+          </div>
+
+          <div className="mt-2 flex items-center justify-between text-[11px] font-mono px-1">
+            <span className="text-gray-500">
+              * Client executes purchase on Amazon Business with 240 Union card. 100% IRS Sec. 179 tax deduction.
+            </span>
+            <span className="font-bold text-black">
+              Total Hardware: <strong className="text-emerald-700">$2,110</strong> (vs Toast $8,000+ locked)
+            </span>
+          </div>
+        </div>
+
+        {/* Section 4: The Zero-Risk 14-Day Pilot Agreement */}
         <div className="mt-6 border-2 border-black rounded-xl p-4 bg-gray-50">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-sm font-black uppercase tracking-wider font-mono text-black flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-700" />
-              3. The 14-Day Zero-Risk Trial & Sovereign Appliance Handover
+              4. The 14-Day Zero-Risk Trial & Sovereign Appliance Handover
             </h2>
             <span className="text-[10px] font-mono uppercase bg-black text-white font-bold px-2 py-0.5 rounded">
               14-Day Shift Trial
@@ -183,7 +273,7 @@ export default function LeaveBehindPage() {
           </div>
         </div>
 
-        {/* Section 4: Acceptance & Signature Block */}
+        {/* Section 5: Acceptance & Signature Block */}
         <div className="mt-6 pt-5 border-t-2 border-gray-300">
           <div className="grid grid-cols-2 gap-8 text-xs font-mono">
             <div>

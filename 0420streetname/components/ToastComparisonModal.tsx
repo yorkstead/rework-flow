@@ -14,7 +14,13 @@ import {
   ArrowRight,
   Sliders,
   Scale,
-  Sparkles
+  Sparkles,
+  HardDrive,
+  Monitor,
+  Tablet,
+  Printer,
+  ShoppingCart,
+  Check
 } from 'lucide-react';
 
 interface ToastComparisonModalProps {
@@ -23,6 +29,8 @@ interface ToastComparisonModalProps {
 }
 
 export const ToastComparisonModal: React.FC<ToastComparisonModalProps> = ({ isOpen, onClose }) => {
+  const [activeTab, setActiveTab] = useState<'financial' | 'hardware'>('financial');
+
   // Configurable sliders based on 240 Union's volume
   const [monthlyVolume, setMonthlyVolume] = useState<number>(240000); // $240k/mo
   const [terminalCount, setTerminalCount] = useState<number>(7); // 7 active terminals
@@ -118,8 +126,39 @@ export const ToastComparisonModal: React.FC<ToastComparisonModalProps> = ({ isOp
           </button>
         </div>
 
-        {/* Big Impact Recovery Summary Card */}
-        <div className="p-4 sm:p-6 bg-[#0e1013] border-b border-[#262a34] grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+        {/* Navigation Tab Switcher */}
+        <div className="flex border-b border-[#262a34] bg-[#111215] px-4 sm:px-6">
+          <button
+            onClick={() => setActiveTab('financial')}
+            className={`py-3 px-4 text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-2 border-b-2 transition ${
+              activeTab === 'financial'
+                ? 'border-[#c29b68] text-[#c29b68]'
+                : 'border-transparent text-[#9ca3af] hover:text-[#e2e4ea]'
+            }`}
+          >
+            <Scale className="w-3.5 h-3.5" />
+            <span>1. Toast Financial Audit & ROI</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('hardware')}
+            className={`py-3 px-4 text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-2 border-b-2 transition ${
+              activeTab === 'hardware'
+                ? 'border-[#c29b68] text-[#c29b68]'
+                : 'border-transparent text-[#9ca3af] hover:text-[#e2e4ea]'
+            }`}
+          >
+            <ShoppingCart className="w-3.5 h-3.5" />
+            <span>2. Station Hardware Bill of Materials (Amazon Direct)</span>
+            <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">
+              0% Markup
+            </span>
+          </button>
+        </div>
+
+        {activeTab === 'financial' ? (
+          <>
+            {/* Big Impact Recovery Summary Card */}
+            <div className="p-4 sm:p-6 bg-[#0e1013] border-b border-[#262a34] grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div className="p-3.5 bg-[#16181d] rounded-xl border border-rose-500/30 flex flex-col justify-between">
             <div>
               <span className="text-[11px] font-mono uppercase tracking-wider text-rose-400 font-bold block">
@@ -441,6 +480,225 @@ export const ToastComparisonModal: React.FC<ToastComparisonModalProps> = ({ isOp
             </div>
           </div>
         </div>
+      </>
+    ) : (
+      /* Tab 2: Station Hardware Bill of Materials (Amazon Direct / $0 Markup) */
+      <div className="p-4 sm:p-6 space-y-6 bg-[#0e1013]">
+        {/* Philosophy Callout Banner */}
+        <div className="p-4 bg-gradient-to-r from-[#1a231d] via-[#141b16] to-[#111215] rounded-xl border border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white font-serif">
+                Direct At-Cost Hardware Principle (0% Equipment Markup)
+              </h3>
+              <p className="text-xs text-[#9ca3af] mt-0.5 leading-relaxed">
+                You purchase all equipment directly from Amazon/CDW on your business card. 240 Union holds direct title, manufacturer warranties, and receives an immediate IRS Section 179 tax deduction. We never mark up hardware by a single cent.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-[#0b0d10] px-4 py-2 rounded-xl border border-emerald-500/40 text-center shrink-0 self-stretch sm:self-auto flex sm:flex-col justify-between items-center sm:items-center">
+            <span className="text-[10px] uppercase font-mono text-emerald-400 font-bold">Total Hardware Investment</span>
+            <span className="text-xl font-mono font-black text-white">$2,110 <span className="text-xs text-[#9ca3af] font-normal">est.</span></span>
+          </div>
+        </div>
+
+        {/* Station by Station Hardware Grid */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-[#c29b68] uppercase font-mono tracking-wider flex items-center gap-1.5">
+              <HardDrive className="w-3.5 h-3.5" />
+              <span>Tailored Station Hardware Configuration (240 Union)</span>
+            </h4>
+            <span className="text-[11px] font-mono text-[#9ca3af]">
+              7 Stations • 2 Handhelds • 1 Master Expo
+            </span>
+          </div>
+
+          <div className="bg-[#111215] border border-[#262a34] rounded-xl overflow-hidden divide-y divide-[#1e222b] text-xs">
+            {/* Local Server Node */}
+            <div className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#16181d] transition">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                  <HardDrive className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white">Local LAN Server Appliance (Brain)</span>
+                    <span className="text-[10px] font-mono bg-[#222731] text-[#e2e4ea] px-1.5 py-0.5 rounded">Office / Server Rack</span>
+                  </div>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                    Intel N100 Fanless Mini-PC, 16GB RAM, 512GB NVMe SSD, Dual 2.5GbE LAN. Runs local database, instantaneous sync, offline persistence.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#262a34]">
+                <span className="text-[11px] font-mono text-[#9ca3af]">1 unit @ $160</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">$160</span>
+              </div>
+            </div>
+
+            {/* Host Stand Station */}
+            <div className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#16181d] transition">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                  <Tablet className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white">Host Stand & VIP Seating Station</span>
+                    <span className="text-[10px] font-mono bg-[#222731] text-[#e2e4ea] px-1.5 py-0.5 rounded">Host Podium</span>
+                  </div>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                    10.9" iPad (10th Gen) or commercial touch panel with 360° steel swivel stand. Floor plan seating, SMS waitlist, reservation notes.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#262a34]">
+                <span className="text-[11px] font-mono text-[#9ca3af]">1 terminal + swivel stand</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">$280</span>
+              </div>
+            </div>
+
+            {/* Main Bar Stations */}
+            <div className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#16181d] transition">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <Monitor className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white">Main Bar High-Speed Terminals</span>
+                    <span className="text-[10px] font-mono bg-[#222731] text-[#e2e4ea] px-1.5 py-0.5 rounded">Bar Station 1 & 2</span>
+                  </div>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                    2x 15.6" Heavy-duty spill-resistant commercial touch terminals. Rapid tap-to-reorder, cellar bottle inventory tracking, auto-grat.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#262a34]">
+                <span className="text-[11px] font-mono text-[#9ca3af]">2 units @ $300</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">$600</span>
+              </div>
+            </div>
+
+            {/* Dining Room Wait Stations */}
+            <div className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#16181d] transition">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                  <Monitor className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white">Dining Room Wait Stations</span>
+                    <span className="text-[10px] font-mono bg-[#222731] text-[#e2e4ea] px-1.5 py-0.5 rounded">North & South Floor</span>
+                  </div>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                    2x 15.6" Server stations on heavy weighted stands. Seat-by-seat coursing, Denver Fed Center auto-splitting, kitchen fire alerts.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#262a34]">
+                <span className="text-[11px] font-mono text-[#9ca3af]">2 units @ $275</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">$550</span>
+              </div>
+            </div>
+
+            {/* Kitchen Expo Pass KDS */}
+            <div className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#16181d] transition">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                  <Flame className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white">Master Kitchen Expo KDS (The Pass)</span>
+                    <span className="text-[10px] font-mono bg-[#222731] text-[#e2e4ea] px-1.5 py-0.5 rounded">Chef's Pass</span>
+                  </div>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                    21.5" Commercial display at the 60-ft open pass. Color-coded ticket timers (green/yellow/red), 1-tap course fires, multi-course syncing.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#262a34]">
+                <span className="text-[11px] font-mono text-[#9ca3af]">1 master screen</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">$260</span>
+              </div>
+            </div>
+
+            {/* Handhelds for Patio & Speed Lunch Pay */}
+            <div className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#16181d] transition">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
+                  <Tablet className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white">Mobile Handhelds (Patio & Tableside Pay)</span>
+                    <span className="text-[10px] font-mono bg-[#222731] text-[#e2e4ea] px-1.5 py-0.5 rounded">Patio & Fast Checkouts</span>
+                  </div>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                    2x Rugged Android handhelds. 20-second tableside Apple Pay/tap checkout for 1:00 PM Fed Center departures. Zero monthly $50 Toast fees.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#262a34]">
+                <span className="text-[11px] font-mono text-[#9ca3af]">2 units @ $130</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">$260</span>
+              </div>
+            </div>
+
+            {/* Existing Printers & Drawers Reused */}
+            <div className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0d1410] border-l-2 border-emerald-400">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                  <Printer className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-emerald-300">Existing Cook Line Printers & Cash Drawers</span>
+                    <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold uppercase">100% Reused</span>
+                  </div>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                    Grill, Sauté, Wood Oven, and Bar Ethernet printers (Epson TM-U220 / TM-T88) + APG cash drawers connect directly over existing Cat6.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                <span className="text-[11px] font-mono text-emerald-400 font-bold">Plug & Play</span>
+                <span className="font-mono font-black text-emerald-400 text-base">$0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Investment Summary & Comparison */}
+        <div className="p-4 bg-[#14161c] rounded-xl border border-[#262a34] grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <span className="text-[11px] font-mono uppercase text-[#9ca3af] block font-bold">Toast Hardware Quote for Same 8 Stations:</span>
+            <div className="text-xl font-mono font-bold text-rose-400 mt-1">
+              $7,200 – $9,000 <span className="text-xs font-normal text-rose-300">(Locked Toast Hardware)</span>
+            </div>
+            <p className="text-[10px] text-[#9ca3af] mt-1">
+              Toast charges $800–$1,000/terminal for proprietary hardware they lock with MDM firmware, plus $50/mo per handheld.
+            </p>
+          </div>
+
+          <div className="border-t sm:border-t-0 sm:border-l border-[#262a34] pt-3 sm:pt-0 sm:pl-4">
+            <span className="text-[11px] font-mono uppercase text-emerald-400 block font-bold">UnionOS Direct Hardware Package:</span>
+            <div className="text-xl font-mono font-bold text-emerald-400 mt-1">
+              $2,110 <span className="text-xs font-normal text-[#e2e4ea]">(100% Owned by 240 Union)</span>
+            </div>
+            <p className="text-[10px] text-[#9ca3af] mt-1">
+              Commercial-grade hardware purchased directly at wholesale/Amazon prices. Zero locked firmware, zero per-device monthly software rent.
+            </p>
+          </div>
+        </div>
+      </div>
+    )}
 
         {/* Footer */}
         <div className="p-4 bg-[#111215] border-t border-[#262a34] flex items-center justify-between">
