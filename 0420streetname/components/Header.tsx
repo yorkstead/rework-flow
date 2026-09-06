@@ -13,8 +13,10 @@ import {
   Clock, 
   UserCheck, 
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  FileSpreadsheet
 } from 'lucide-react';
+import { ZReportModal } from './ZReportModal';
 
 export type ActiveTab = 'floor' | 'pos' | 'split' | 'kds' | 'events';
 
@@ -34,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
 
   const [timeStr, setTimeStr] = useState<string>('');
   const [serverDropdownOpen, setServerDropdownOpen] = useState(false);
+  const [zReportModalOpen, setZReportModalOpen] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -112,6 +115,15 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
           </div>
 
           <button
+            onClick={() => setZReportModalOpen(true)}
+            title="Manager End-of-Day Shift Closeout & Z-Report"
+            className="flex items-center gap-1 px-2 py-0.5 text-[#c29b68] hover:text-white bg-[#1a1d24] hover:bg-[#222731] rounded border border-[#c29b68]/40 transition font-mono font-semibold"
+          >
+            <FileSpreadsheet className="w-3 h-3 text-[#c29b68]" />
+            <span>Z-Report</span>
+          </button>
+
+          <button
             onClick={() => {
               if (confirm('Reset demo state to default 240 Union shift?')) {
                 resetDemo();
@@ -125,6 +137,12 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
           </button>
         </div>
       </div>
+
+      {/* Z-Report Closeout Modal */}
+      <ZReportModal
+        isOpen={zReportModalOpen}
+        onClose={() => setZReportModalOpen(false)}
+      />
 
       {/* Main navigation header */}
       <div className="px-3 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2.5 max-w-full overflow-hidden">
