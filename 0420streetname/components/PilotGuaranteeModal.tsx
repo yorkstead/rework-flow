@@ -15,8 +15,11 @@ import {
   Check, 
   ArrowRight,
   HelpCircle,
-  HardDrive
+  HardDrive,
+  Printer,
+  FileText
 } from 'lucide-react';
+import Link from 'next/link';
 import { useUnionStore } from '../lib/store/useUnionStore';
 
 interface PilotGuaranteeModalProps {
@@ -218,6 +221,14 @@ export const PilotGuaranteeModal: React.FC<PilotGuaranteeModalProps> = ({ isOpen
             <span>Local appliance install • Zero cloud subscription lock-in</span>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Link
+              href="/leave-behind"
+              target="_blank"
+              className="w-full sm:w-auto px-4 py-2 bg-[#111215] hover:bg-[#1a1d24] text-[#c29b68] border border-[#c29b68]/40 font-bold rounded-xl transition shadow flex items-center justify-center gap-1.5"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print 1-Page Leave-Behind (PDF)</span>
+            </Link>
             <button
               onClick={onClose}
               className="w-full sm:w-auto px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition shadow-md flex items-center justify-center gap-1.5"
