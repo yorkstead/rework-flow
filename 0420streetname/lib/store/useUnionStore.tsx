@@ -37,6 +37,9 @@ interface UnionStoreContextType {
   resetDemo: () => void;
   activeOrder: Order | null;
   activeTable: Table | null;
+  isOfflineSimulated: boolean;
+  offlineQueueCount: number;
+  toggleOfflineSimulation: () => void;
 }
 
 const UnionStoreContext = createContext<UnionStoreContextType | null>(null);
@@ -66,8 +69,23 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [activeTableId, setActiveTableId] = useState<string | null>('tbl-23');
   const [activeStation, setActiveStation] = useState<KitchenStation | 'all'>('all');
   const [currentServer, setCurrentServer] = useState<string>('Marcus T.');
+  const [isOfflineSimulated, setIsOfflineSimulated] = useState<boolean>(false);
+  const [offlineQueueCount, setOfflineQueueCount] = useState<number>(0);
 
   const localVersionRef = React.useRef<number>(0);
+  const isOfflineRef = React.useRef<boolean>(false);
+  isOfflineRef.current = isOfflineSimulated;
+
+  const toggleOfflineSimulation = useCallback(() => {
+    setIsOfflineSimulated(prev => {
+      const next = !prev;
+      if (!next) {
+        // Reconnecting: flush queue back to zero
+        setOfflineQueueCount(0);
+      }
+      return next;
+    });
+  }, []);
 
   // Load from server and localStorage on client mount
   useEffect(() => {
@@ -100,9 +118,11 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       });
   }, []);
 
-  // Poll server every 1200ms for real-time multi-device sync
+  // Poll server every 1200ms for real-time multi-device sync (Skipped if offline)
   useEffect(() => {
     const interval = setInterval(() => {
+      if (isOfflineRef.current) return; // Prevent cloud ping when offline is simulated
+
       fetch('/api/sync')
         .then(res => res.json())
         .then(data => {
@@ -162,6 +182,12 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           channel.postMessage({ type: soundToTrigger });
         }
         channel.close();
+      }
+
+      // If offline simulated, record into local offline queue and don't hit cloud endpoint
+      if (isOfflineRef.current) {
+        setOfflineQueueCount(q => q + 1);
+        return;
       }
 
       fetch('/api/sync', {
@@ -694,6 +720,9 @@ export const UnionStoreProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         resetDemo,
         activeOrder,
         activeTable,
+        isOfflineSimulated,
+        offlineQueueCount,
+        toggleOfflineSimulation,
       }}
     >
       {children}

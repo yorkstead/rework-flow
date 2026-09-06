@@ -10,6 +10,7 @@ import {
   Wine, 
   RotateCcw, 
   Wifi, 
+  WifiOff,
   Clock, 
   UserCheck, 
   Sparkles,
@@ -31,7 +32,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     setCurrentServer, 
     activeTable, 
     resetDemo, 
-    orders 
+    orders,
+    isOfflineSimulated,
+    offlineQueueCount
   } = useUnionStore();
 
   const [timeStr, setTimeStr] = useState<string>('');
@@ -59,15 +62,27 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
       {/* Top utility bar */}
       <div className="px-3 py-1 bg-[#0c0d10] border-b border-[#1e222a] flex items-center justify-between text-xs text-[#9ca3af] max-w-full overflow-hidden">
         <div className="flex items-center gap-2 truncate">
-          <div className="flex items-center gap-1.5 text-emerald-400 font-mono shrink-0">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-            </span>
-            <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="font-semibold tracking-wider text-[11px] hidden sm:inline text-[#e2e4ea]">LOCAL-FIRST APPLIANCE • 0ms LAN</span>
-            <span className="font-semibold tracking-wider text-[11px] sm:hidden text-[#e2e4ea]">0ms LAN</span>
-          </div>
+          {isOfflineSimulated ? (
+            <div className="flex items-center gap-1.5 text-amber-400 font-mono shrink-0 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/50 animate-pulse">
+              <WifiOff className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-bold tracking-wider text-[11px]">COMCAST DOWN • LOCAL LAN APPLIANCE ACTIVE</span>
+              {offlineQueueCount > 0 && (
+                <span className="bg-amber-500 text-black text-[10px] font-black px-1.5 py-0.2 rounded ml-1">
+                  {offlineQueueCount} queued
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-emerald-400 font-mono shrink-0">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+              </span>
+              <Wifi className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="font-semibold tracking-wider text-[11px] hidden sm:inline text-[#e2e4ea]">LOCAL-FIRST APPLIANCE • 0ms LAN</span>
+              <span className="font-semibold tracking-wider text-[11px] sm:hidden text-[#e2e4ea]">0ms LAN</span>
+            </div>
+          )}
           <span className="text-[#262a34] hidden lg:inline">|</span>
           <span className="hidden lg:inline text-[#9ca3af] truncate font-serif italic">
             240 Union Blvd, Lakewood CO • American Grill & Wood-Fired Kitchen

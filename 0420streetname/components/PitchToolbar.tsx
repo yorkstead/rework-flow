@@ -16,7 +16,8 @@ import {
   Share2,
   Camera,
   ShieldCheck,
-  Film
+  Film,
+  WifiOff
 } from 'lucide-react';
 import Link from 'next/link';
 import { RoiCalculatorModal } from './RoiCalculatorModal';
@@ -44,7 +45,10 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
     fireCourse, 
     settleCheck, 
     orders, 
-    decrementCellar 
+    decrementCellar,
+    isOfflineSimulated,
+    offlineQueueCount,
+    toggleOfflineSimulation
   } = useUnionStore();
 
   const [roiModalOpen, setRoiModalOpen] = useState(false);
@@ -177,6 +181,20 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
             >
               <Wine className="w-3.5 h-3.5 text-[#c29b68]" />
               <span>🍷 Wine Room 86</span>
+            </button>
+
+            {/* Offline Resilience Simulation Trigger */}
+            <button
+              onClick={toggleOfflineSimulation}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm shrink-0 whitespace-nowrap border ${
+                isOfflineSimulated
+                  ? 'bg-amber-500 text-black border-amber-300 font-black animate-pulse'
+                  : 'bg-[#16181d] hover:bg-[#1f232b] text-amber-300 border-amber-500/50'
+              }`}
+              title="Pitch: Cut Comcast internet on Union Blvd. Terminals & Kitchen continue 100% locally with 0ms interruption"
+            >
+              <WifiOff className="w-3.5 h-3.5" />
+              <span>{isOfflineSimulated ? '⚡ Cut Comcast (OFFLINE)' : '⚡ Cut Internet (Demo)'}</span>
             </button>
 
             <div className="h-4 w-px bg-[#262a34] mx-0.5 shrink-0 hidden sm:block"></div>
