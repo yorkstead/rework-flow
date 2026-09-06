@@ -85,28 +85,28 @@ export default function LeaveBehindPage() {
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-sm font-black uppercase tracking-wider font-mono text-black flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-emerald-700" />
-              1. 5-Year Financial Recovery Audit (Vs. Toast SaaS Tolls)
+              1. Perpetual Ownership vs. Toast SaaS Rent ($7,500 Turnkey Handover)
             </h2>
             <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
-              +$261,300 Direct To Bottom Line
+              Breakeven in 7 Months • 100% Owned
             </span>
           </div>
 
           <div className="grid grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
             <div className="border-r border-gray-200 pr-2">
-              <div className="text-[11px] font-mono uppercase text-gray-600 font-bold">Toast Software SaaS Eliminated</div>
-              <div className="text-xl sm:text-2xl font-black font-mono text-black mt-1">$14,400<span className="text-xs text-gray-500 font-normal">/yr</span></div>
-              <p className="text-[10px] text-gray-500 mt-0.5">Terminal licenses ($125/mo) + KDS, gift card, & add-on module tolls.</p>
+              <div className="text-[11px] font-mono uppercase text-gray-600 font-bold">Turnkey Buyout (Zero SaaS)</div>
+              <div className="text-xl sm:text-2xl font-black font-mono text-black mt-1">$7,500<span className="text-xs text-gray-500 font-normal"> flat</span></div>
+              <p className="text-[10px] text-gray-500 mt-0.5">Complete hardware appliance, setup & training. $0 mandatory monthly software fees forever.</p>
             </div>
             <div className="border-r border-gray-200 pr-2">
-              <div className="text-[11px] font-mono uppercase text-gray-600 font-bold">Interchange-Plus Card Margins</div>
-              <div className="text-xl sm:text-2xl font-black font-mono text-emerald-700 mt-1">+$37,860<span className="text-xs text-gray-500 font-normal">/yr</span></div>
-              <p className="text-[10px] text-gray-500 mt-0.5">1.05% processing spread clawed back from Toast flat rates on $3.6M gross.</p>
+              <div className="text-[11px] font-mono uppercase text-gray-600 font-bold">Toast SaaS Eliminated</div>
+              <div className="text-xl sm:text-2xl font-black font-mono text-emerald-700 mt-1">+$16,596<span className="text-xs text-gray-500 font-normal">/yr</span></div>
+              <p className="text-[10px] text-gray-500 mt-0.5">7 terminals ($110/mo) + Toast Tables ($199), Online ($149), Handhelds ($200) all permanently zeroed.</p>
             </div>
             <div>
-              <div className="text-[11px] font-mono uppercase text-gray-600 font-bold">5-Year Capital Recovered</div>
-              <div className="text-xl sm:text-2xl font-black font-mono text-black mt-1">$261,300</div>
-              <p className="text-[10px] text-gray-500 mt-0.5">100% retained on local balance sheet instead of Toast shareholder dividends.</p>
+              <div className="text-[11px] font-mono uppercase text-gray-600 font-bold">5-Year Equity Recouped</div>
+              <div className="text-xl sm:text-2xl font-black font-mono text-black mt-1">+$250,000+</div>
+              <p className="text-[10px] text-gray-500 mt-0.5">Retained in restaurant cash flow rather than drained to Boston tech company subscriptions.</p>
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function LeaveBehindPage() {
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-sm font-black uppercase tracking-wider font-mono text-black flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-700" />
-              3. The "Hate It & Owe $0.00" Pilot Agreement
+              3. The 14-Day Zero-Risk Trial & Sovereign Appliance Handover
             </h2>
             <span className="text-[10px] font-mono uppercase bg-black text-white font-bold px-2 py-0.5 rounded">
               14-Day Shift Trial
@@ -164,21 +164,21 @@ export default function LeaveBehindPage() {
           </div>
 
           <p className="text-xs text-gray-700 leading-relaxed font-serif">
-            We will deploy and configure UnionOS side-by-side on your floor terminals for 14 consecutive days. Your team tests the speed-split checks and kitchen coursing during live lunch and dinner service.
+            We will deploy and configure UnionOS side-by-side on your floor terminals for 14 consecutive days. Your team tests the speed-split checks, coursing pass, and cellar meters during live service. At day 14, <strong>buy out the turnkey system for $7,500 flat</strong> and own your restaurant software outright forever—or unplug it and owe $0.00.
           </p>
 
           <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-300 text-[11px]">
             <div className="flex items-start gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-              <span><strong>Immutable Audit Ledger:</strong> Cryptographic SHA-256 block hash on every ticket and dollar so Toast and your bookkeeper match 100%.</span>
+              <span><strong>Perpetual Independence:</strong> You own the local server appliance and source code. No forced subscriptions, no shutoffs.</span>
             </div>
             <div className="flex items-start gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-              <span><strong>Zero Disruption Rollback:</strong> Toast hardware remains plugged in and on standby at your host stand. Zero lock-in.</span>
+              <span><strong>Optional $149/mo Concierge:</strong> Voluntary emergency insurance & offsite backups. Cancel anytime without affecting system operations.</span>
             </div>
             <div className="flex items-start gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-black shrink-0 mt-0.5" />
-              <span><strong>$0.00 Risk:</strong> If your servers or kitchen do not enthusiastically prefer it after 14 days, you owe literally zero dollars.</span>
+              <span><strong>Zero-Risk Exit:</strong> If your servers or kitchen do not prefer it after 14 days, you walk away and owe literally zero dollars.</span>
             </div>
           </div>
         </div>

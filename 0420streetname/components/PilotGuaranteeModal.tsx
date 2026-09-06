@@ -268,7 +268,7 @@ export const PilotGuaranteeModal: React.FC<PilotGuaranteeModalProps> = ({ isOpen
               <span>What to Say to Michael / General Manager:</span>
             </h5>
             <blockquote className="text-xs text-[#e2e4ea] italic leading-relaxed border-l-2 border-[#c29b68] pl-3 py-1 font-serif">
-              "Michael, here is what I propose: Let me put this in your restaurant for 14 days. We run your lunch or dinner shifts on it. Every order, check split, and wine bottle is logged with an immutable audit trail—so your accountant and Toast backup have every penny accounted for. If your servers don’t shave 15 minutes off Denver Fed Center split checks, or your kitchen doesn't love the coursing pass, you unplug it and walk away. You don't owe me a single dime. Zero risk on your balance sheet."
+              "Michael, here is what I propose: Let me put this in your restaurant for 14 days. We run your lunch and dinner shifts on it. Every order, split check, and wine bottle is logged with an immutable audit trail—so your accountant and Toast backup have every penny accounted for. At day 14, if your team loves it, you buy out the entire system turnkey for a flat $7,500. You own it outright forever. Zero mandatory SaaS rent, zero per-terminal licenses, zero lock-in. If you don't love it, we unplug it and you owe literally $0.00."
             </blockquote>
           </div>
         </div>

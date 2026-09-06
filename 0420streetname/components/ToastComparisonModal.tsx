@@ -35,32 +35,50 @@ export const ToastComparisonModal: React.FC<ToastComparisonModalProps> = ({ isOp
   const [hasToastHandhelds, setHasToastHandhelds] = useState(true); // $50/device/mo ($200)
   const [hasToastCellBackup, setHasToastCellBackup] = useState(true); // $65/mo
 
+  // Rework Flow Buyout & Support Configuration
+  const [includeOptionalSupport, setIncludeOptionalSupport] = useState(true); // $149/mo optional insurance
+
   if (!isOpen) return null;
 
   // Monthly Calculations
   const averageCheck = 85;
   const monthlyTransactions = Math.round(monthlyVolume / averageCheck);
 
-  // Toast Monthly Costs
-  const toastProcessingFee = (monthlyVolume * (toastRate / 100)) + (monthlyTransactions * 0.15);
-  const toastSoftwareFee = terminalCount * 110; // $110/mo/terminal base
+  // Toast Recurring Software & Module Drain (Pure SaaS Rent)
+  const toastSoftwareFee = terminalCount * 110; // $110/mo/terminal base = $770/mo
   const toastAddonFees = 
     (hasToastTables ? 199 : 0) + 
     (hasToastOnline ? 149 : 0) + 
     (hasToastHandhelds ? 200 : 0) + 
     (hasToastCellBackup ? 65 : 0);
-  const totalMonthlyToast = toastProcessingFee + toastSoftwareFee + toastAddonFees;
-  const totalAnnualToast = totalMonthlyToast * 12;
+  const toastMonthlySoftwareTotal = toastSoftwareFee + toastAddonFees; // ~$1,383/mo
+  const toastAnnualSoftwareTotal = toastMonthlySoftwareTotal * 12; // ~$16,596/yr
 
-  // UnionOS Costs (Local-First Flat Appliance)
+  // Processing Spread (Toast Flat 2.79% vs Direct Interchange 2.15%)
+  const toastProcessingFee = (monthlyVolume * (toastRate / 100)) + (monthlyTransactions * 0.15);
   const unionProcessingFee = (monthlyVolume * (unionRate / 100)) + (monthlyTransactions * 0.08);
-  const unionApplianceFee = 450; // Flat enterprise appliance maintenance & support
-  const totalMonthlyUnion = unionProcessingFee + unionApplianceFee;
-  const totalAnnualUnion = totalMonthlyUnion * 12;
+  const monthlyProcessingSavings = toastProcessingFee - unionProcessingFee;
+  const annualProcessingSavings = monthlyProcessingSavings * 12;
 
-  // Net Annual Client Recovery
-  const annualSavings = totalAnnualToast - totalAnnualUnion;
-  const fiveYearRecovery = annualSavings * 5;
+  // Total Toast Annual Cash Outflow
+  const totalAnnualToast = toastAnnualSoftwareTotal + (toastProcessingFee * 12);
+
+  // Rework Flow One-Time Buyout & Optional Support
+  const buyoutPrice = 7500; // Flat one-time complete ownership
+  const optionalAnnualSupport = includeOptionalSupport ? (149 * 12) : 0; // $1,788/yr optional insurance
+  
+  // Year 1 Total & Recurring Years
+  const year1UnionTotal = buyoutPrice + optionalAnnualSupport + (unionProcessingFee * 12);
+  const year2PlusUnionAnnual = optionalAnnualSupport + (unionProcessingFee * 12);
+
+  // Net Savings
+  const year1NetSavings = totalAnnualToast - year1UnionTotal;
+  const recurringAnnualSavings = totalAnnualToast - year2PlusUnionAnnual;
+  const fiveYearRecovery = year1NetSavings + (recurringAnnualSavings * 4);
+
+  // Payback period (Months to pay back $7,500 purely from software SaaS elimination)
+  const monthlyPureSoftwareSavings = toastMonthlySoftwareTotal - (includeOptionalSupport ? 149 : 0);
+  const breakevenMonths = Math.max(1, Math.round((buyoutPrice / (monthlyPureSoftwareSavings + monthlyProcessingSavings)) * 10) / 10);
 
   return (
     <div 
@@ -102,42 +120,75 @@ export const ToastComparisonModal: React.FC<ToastComparisonModalProps> = ({ isOp
 
         {/* Big Impact Recovery Summary Card */}
         <div className="p-4 sm:p-6 bg-[#0e1013] border-b border-[#262a34] grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-          <div className="p-3 bg-[#16181d] rounded-xl border border-rose-500/30">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-rose-400 font-bold block">
-              Current Toast Annual Drain
-            </span>
-            <span className="text-2xl sm:text-3xl font-mono font-black text-rose-300 block mt-1">
-              ${Math.round(totalAnnualToast).toLocaleString()}
-            </span>
-            <span className="text-[10px] text-[#9ca3af] mt-0.5 block">
-              Processing + Per-Terminal Software + Add-ons
-            </span>
-          </div>
-
-          <div className="p-3 bg-[#16181d] rounded-xl border border-emerald-500/30">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-bold block">
-              UnionOS Annual Cost
-            </span>
-            <span className="text-2xl sm:text-3xl font-mono font-black text-emerald-300 block mt-1">
-              ${Math.round(totalAnnualUnion).toLocaleString()}
-            </span>
-            <span className="text-[10px] text-[#9ca3af] mt-0.5 block">
-              Interchange-Plus + Flat Local Appliance
+          <div className="p-3.5 bg-[#16181d] rounded-xl border border-rose-500/30 flex flex-col justify-between">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-rose-400 font-bold block">
+                Current Toast Annual Drain
+              </span>
+              <span className="text-2xl sm:text-3xl font-mono font-black text-rose-300 block mt-1">
+                ${Math.round(totalAnnualToast).toLocaleString()}
+              </span>
+            </div>
+            <span className="text-[10px] text-[#9ca3af] mt-2 block border-t border-[#262a34] pt-1.5">
+              ${Math.round(toastAnnualSoftwareTotal).toLocaleString()}/yr pure software rent + card markup
             </span>
           </div>
 
-          <div className="p-3 bg-gradient-to-br from-[#2a1d12] to-[#16181d] rounded-xl border border-[#c29b68] shadow-lg shadow-[#c29b68]/10">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-[#c29b68] font-black block flex items-center justify-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#c29b68]" />
-              NET ANNUAL CLIENT RECOVERY
-            </span>
-            <span className="text-2xl sm:text-3xl font-mono font-black text-[#e2e4ea] block mt-1">
-              +${Math.round(annualSavings).toLocaleString()}
-            </span>
-            <span className="text-[10px] text-emerald-400 font-bold mt-0.5 block">
-              ${Math.round(fiveYearRecovery).toLocaleString()} 5-Yr Direct Bottom-Line Profit
+          <div className="p-3.5 bg-gradient-to-b from-[#1b251f] to-[#16181d] rounded-xl border border-emerald-500/40 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                  UnionOS Handover Buyout
+                </span>
+                <span className="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold uppercase">
+                  Own It
+                </span>
+              </div>
+              <span className="text-2xl sm:text-3xl font-mono font-black text-white block mt-1">
+                $7,500 <span className="text-xs text-emerald-400 font-normal">Flat</span>
+              </span>
+            </div>
+            <div className="text-[10px] text-emerald-400/90 mt-2 block border-t border-emerald-500/20 pt-1.5 font-medium">
+              Payback in <strong className="text-white font-mono">{breakevenMonths} Months</strong> • $0 mandatory subscriptions
+            </div>
+          </div>
+
+          <div className="p-3.5 bg-gradient-to-br from-[#2a1d12] to-[#16181d] rounded-xl border border-[#c29b68] shadow-lg shadow-[#c29b68]/10 flex flex-col justify-between">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#c29b68] font-black block flex items-center justify-center gap-1">
+                <Sparkles className="w-3 h-3 text-[#c29b68]" />
+                5-YEAR CLIENT EQUITY
+              </span>
+              <span className="text-2xl sm:text-3xl font-mono font-black text-[#e2e4ea] block mt-1">
+                +${Math.round(fiveYearRecovery).toLocaleString()}
+              </span>
+            </div>
+            <span className="text-[10px] text-emerald-400 font-bold mt-2 block border-t border-[#c29b68]/20 pt-1.5">
+              +${Math.round(recurringAnnualSavings).toLocaleString()}/yr recurring bottom-line savings
             </span>
           </div>
+        </div>
+
+        {/* Independence & Payback Banner */}
+        <div className="px-4 sm:px-6 py-3 bg-[#111317] border-b border-[#262a34] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+            <span className="text-[#e2e4ea]">
+              <strong>Rework Flow Ownership Model:</strong> 100% turnkey handover. The hardware appliance and code run in your building. No forced subscription lock-in.
+            </span>
+          </div>
+          
+          <label className="flex items-center gap-2 bg-[#16181d] hover:bg-[#1f232b] px-3 py-1.5 rounded-lg border border-[#262a34] cursor-pointer shrink-0 transition">
+            <input 
+              type="checkbox"
+              checked={includeOptionalSupport}
+              onChange={(e) => setIncludeOptionalSupport(e.target.checked)}
+              className="accent-[#c29b68] w-4 h-4 rounded"
+            />
+            <span className="text-[#9ca3af] text-[11px]">
+              Include Optional Concierge Insurance: <strong className="text-[#e2e4ea]">$149/mo</strong>
+            </span>
+          </label>
         </div>
 
         {/* Interactive Sliders & Configuration */}
@@ -293,6 +344,48 @@ export const ToastComparisonModal: React.FC<ToastComparisonModalProps> = ({ isOp
                 </div>
                 <span className="font-mono text-rose-400 font-bold">$65 / mo</span>
               </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Payback & Cash Flow Trajectory Meter */}
+        <div className="p-4 sm:p-6 bg-[#13151a] border-b border-[#262a34]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 className="text-xs font-bold text-[#c29b68] uppercase tracking-wider flex items-center gap-1.5 font-serif">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                Capital Payback & Equity Timeline ($7,500 One-Time Turnkey)
+              </h3>
+              <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                Every month Toast drains <span className="text-rose-400 font-mono font-bold">${Math.round(toastMonthlySoftwareTotal).toLocaleString()}</span> in software rent alone. UnionOS eliminates this SaaS forever.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-[#0c0d10] px-3 py-1.5 rounded-lg border border-emerald-500/40 shrink-0">
+              <span className="text-[10px] uppercase font-mono text-[#9ca3af]">Payback Reached:</span>
+              <span className="text-xs font-mono font-black text-emerald-400">Month {breakevenMonths}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-2.5 bg-[#0e1013] rounded-lg border border-[#262a34]">
+              <span className="text-[10px] font-mono text-[#9ca3af] block">Month 1 (Launch)</span>
+              <span className="font-mono font-bold text-white text-sm block mt-0.5">-$7,500 Capital</span>
+              <span className="text-[10px] text-[#9ca3af]">Hardware installed & live</span>
+            </div>
+            <div className="p-2.5 bg-[#0e1013] rounded-lg border border-[#262a34]">
+              <span className="text-[10px] font-mono text-[#9ca3af] block">Month 4 (Mid-Flight)</span>
+              <span className="font-mono font-bold text-amber-400 text-sm block mt-0.5">-$2,560 Net</span>
+              <span className="text-[10px] text-[#9ca3af]">66% of buyout recouped</span>
+            </div>
+            <div className="p-2.5 bg-emerald-950/40 rounded-lg border border-emerald-500/40">
+              <span className="text-[10px] font-mono text-emerald-400 block font-bold">Month 7-8 (Breakeven)</span>
+              <span className="font-mono font-bold text-emerald-300 text-sm block mt-0.5">$0 Net Cost (100% Recouped)</span>
+              <span className="text-[10px] text-emerald-400/80">Appliance pays for itself</span>
+            </div>
+            <div className="p-2.5 bg-gradient-to-br from-[#1e1710] to-[#16181d] rounded-lg border border-[#c29b68]/60">
+              <span className="text-[10px] font-mono text-[#c29b68] block font-bold">Year 1 & Beyond</span>
+              <span className="font-mono font-bold text-[#c29b68] text-sm block mt-0.5">+${Math.round(recurringAnnualSavings).toLocaleString()} / yr</span>
+              <span className="text-[10px] text-emerald-400 font-medium">Pure bottom-line profit</span>
             </div>
           </div>
         </div>
