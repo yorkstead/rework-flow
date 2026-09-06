@@ -15,8 +15,10 @@ import {
   Volume2,
   Share2,
   Camera,
-  ShieldCheck
+  ShieldCheck,
+  Film
 } from 'lucide-react';
+import Link from 'next/link';
 import { RoiCalculatorModal } from './RoiCalculatorModal';
 import { QRCodeModal } from './QRCodeModal';
 import { MarketingKitModal } from './MarketingKitModal';
@@ -208,6 +210,16 @@ export const PitchToolbar: React.FC<PitchToolbarProps> = ({
               <Camera className="w-3.5 h-3.5 text-[#c29b68]" />
               <span>Maps & Socials</span>
             </button>
+
+            {/* 15s Commercial / Reel Link */}
+            <Link
+              href="/video"
+              className="px-2.5 py-1 bg-[#16181d] hover:bg-[#222731] text-purple-300 border border-purple-500/50 rounded-lg text-xs font-bold flex items-center gap-1 transition shadow-sm shrink-0 whitespace-nowrap"
+              title="Watch 15-Second Fed Center Lunch Commercial (1080x1920 Reel)"
+            >
+              <Film className="w-3.5 h-3.5 text-purple-400" />
+              <span>15s Reel</span>
+            </Link>
 
             {/* QR Phone Pairing */}
             <button
